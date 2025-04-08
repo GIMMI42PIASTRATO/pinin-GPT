@@ -15,7 +15,7 @@ export default async function ChatLayout({
 		<SidebarProvider defaultOpen={defaultOpen}>
 			<AppSidebar />
 			<main>
-				<SidebarTrigger />
+				<SidebarTrigger className="pointer-events-auto h-8 w-8 p-1 fixed left-2 top-2 z-50 font-medium gap-2 focus-visible:ring-1" />
 				{children}
 			</main>
 		</SidebarProvider>
