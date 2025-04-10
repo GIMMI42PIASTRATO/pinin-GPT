@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
-import { Form } from "react-hook-form";
+import { Form } from "@/components/ui/form";
 
 // Utils
 import { cn } from "@/lib/utils";
@@ -38,11 +38,13 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	});
 
 	const onSubmit = (data: FormSchema) => {
+		console.log("Submitting data: ", data);
 		// TODO: handle error reset
 		startTransition(() => {
-			sendQuestion(data).then((data) => {
-				// TODO: setResponse(data.response);
-				// TODO: setError(data.error);
+			sendQuestion(data).then((response) => {
+				// TODO: setMessage(response.message);
+				// TODO: setError(response.error);
+				console.log("☕️ My message:", response.message);
 			});
 		});
 	};
@@ -60,10 +62,10 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 							className
 						)}
 						placeholder="Fai una domanda."
-						name="prompt"
+						{...form.register("prompt")}
 						{...props}
 					/>
-					<Button type="submit" size="icon">
+					<Button type="submit" size="icon" disabled={isPending}>
 						<ArrowUp />
 					</Button>
 				</form>
