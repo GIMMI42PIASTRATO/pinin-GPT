@@ -58,11 +58,16 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 		startTransition(() => {
 			sendQuestion(data)
-				.then((response) => {
+				.then(async (response) => {
 					if (response.error) {
 						setError(response.error);
 					}
 					if (response.message) {
+						// Un comment if you want to add a delay
+						// await new Promise<void>((resolve) =>
+						// 	setTimeout(resolve, 5000)
+						// );
+
 						addMessage(response.message, "model");
 					}
 
