@@ -4,6 +4,9 @@
 import { useForm } from "react-hook-form";
 import { useTransition } from "react";
 
+// Context
+import { useChatContext } from "@/contexts/chatContext";
+
 // zod
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,9 +28,18 @@ import { InputPromptTypes } from "@/types/propTypes";
 
 // zod schema
 import { PromptSchema } from "@/schema";
+import { error } from "console";
 
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
+
+	const {
+		currentPrompt,
+		setCurrentPrompt,
+		addMessage,
+		setError,
+		setIsLoading,
+	} = useChatContext();
 
 	type FormSchema = z.infer<typeof PromptSchema>;
 	const form = useForm<FormSchema>({
@@ -39,13 +51,29 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 	const onSubmit = (data: FormSchema) => {
 		console.log("Submitting data: ", data);
-		// TODO: handle error reset
+		setError(null);
+		addMessage(currentPrompt, "user");
+		setCurrentPrompt("");
+		setIsLoading(true);
+
 		startTransition(() => {
-			sendQuestion(data).then((response) => {
-				// TODO: setMessage(response.message);
-				// TODO: setError(response.error);
-				console.log("☕️ My message:", response.message);
-			});
+			sendQuestion(data)
+				.then((response) => {
+					if (response.error) {
+						setError(response.error);
+					}
+					if (response.message) {
+						addMessage(response.message, "model");
+					}
+
+					console.log("☕️ My message:", response.message);
+				})
+				.catch((error) => {
+					setError(error.message || "Something went wrong");
+				})
+				.finally(() => {
+					setIsLoading(false);
+				});
 		});
 	};
 
@@ -62,7 +90,13 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 							className
 						)}
 						placeholder="Fai una domanda."
-						{...form.register("prompt")}
+						value={currentPrompt}
+						disabled={isPending}
+						{...form.register("prompt", {
+							onChange: (
+								e: React.ChangeEvent<HTMLTextAreaElement>
+							) => setCurrentPrompt(e.target.value),
+						})}
 						{...props}
 					/>
 					<Button type="submit" size="icon" disabled={isPending}>
