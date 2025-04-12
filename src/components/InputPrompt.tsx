@@ -2,7 +2,7 @@
 
 // Hooks
 import { useForm } from "react-hook-form";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 // Context
 import { useChatContext } from "@/contexts/chatContext";
@@ -49,10 +49,15 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		},
 	});
 
+	// Sync the field of the form with currentPrompt when it changes
+	useEffect(() => {
+		form.setValue("prompt", currentPrompt);
+	}, [currentPrompt, form]);
+
 	const onSubmit = (data: FormSchema) => {
 		console.log("Submitting data: ", data);
 		setError(null);
-		addMessage(currentPrompt, "user");
+		addMessage(data.prompt, "user");
 		setCurrentPrompt("");
 		setIsLoading(true);
 
