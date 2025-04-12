@@ -10,7 +10,12 @@ const ChatContext = createContext<ChatContextType>({
 	isLoading: false,
 	error: null,
 	setCurrentPrompt: () => {},
-	addMessage: () => {},
+	addMessage: (content: string, role: "user" | "assistant") => ({
+		id: "",
+		content,
+		role,
+		timestamp: new Date(),
+	}),
 	clearMessages: () => {},
 	setError: () => {},
 	setIsLoading: () => {},
@@ -23,7 +28,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const addMessage = (content: string, role: "user" | "model") => {
+	const addMessage = (
+		content: string,
+		role: "user" | "assistant"
+	): ChatMessage => {
 		const newMessage: ChatMessage = {
 			id: crypto.randomUUID(),
 			content,
@@ -31,6 +39,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 			timestamp: new Date(),
 		};
 		setMessages((prev) => [...prev, newMessage]);
+
+		return newMessage;
 	};
 
 	const clearMessages = () => {

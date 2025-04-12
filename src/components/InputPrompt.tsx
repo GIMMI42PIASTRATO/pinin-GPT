@@ -28,12 +28,12 @@ import { InputPromptTypes } from "@/types/propTypes";
 
 // zod schema
 import { PromptSchema } from "@/schema";
-import { error } from "console";
 
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
 
 	const {
+		messages,
 		currentPrompt,
 		setCurrentPrompt,
 		addMessage,
@@ -54,15 +54,15 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		form.setValue("prompt", currentPrompt);
 	}, [currentPrompt, form]);
 
-	const onSubmit = (data: FormSchema) => {
-		console.log("Submitting data: ", data);
+	const onSubmit = (formData: FormSchema) => {
+		console.log("Submitting data: ", formData);
 		setError(null);
-		addMessage(data.prompt, "user");
+		addMessage(formData.prompt, "user");
 		setCurrentPrompt("");
 		setIsLoading(true);
 
 		startTransition(() => {
-			sendQuestion(data)
+			sendQuestion(messages)
 				.then(async (response) => {
 					if (response.error) {
 						setError(response.error);
@@ -73,7 +73,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 						// 	setTimeout(resolve, 5000)
 						// );
 
-						addMessage(response.message, "model");
+						addMessage(response.message, "assistant");
 					}
 
 					console.log("☕️ My message:", response.message);
