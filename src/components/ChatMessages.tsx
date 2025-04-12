@@ -1,6 +1,8 @@
 "use client";
 
+// Hooks
 import { useChatContext } from "@/contexts/chatContext";
+import { useEffect, useRef } from "react";
 
 // Components
 import NewConversationTemplate from "@/components/NewConversationTemplate";
@@ -8,8 +10,17 @@ import { UserMessage, ModelMessage } from "@/components/MessageComponent";
 
 export default function ChatMessages() {
 	const { messages, error, isLoading } = useChatContext();
+	const messageEndRef = useRef<HTMLDivElement>(null);
 
-	console.log(messages.length);
+	const scrollToBottom = () => {
+		messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [messages, isLoading]);
+
+	// console.log(messages.length);
 
 	if (messages.length === 0) {
 		return <NewConversationTemplate />;
@@ -54,6 +65,8 @@ export default function ChatMessages() {
 					<p className="text-red-500">Errore: {error}</p>
 				</div>
 			)}
+
+			<div ref={messageEndRef} />
 		</>
 	);
 }
