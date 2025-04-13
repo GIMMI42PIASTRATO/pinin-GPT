@@ -8,7 +8,6 @@ import {
 	SidebarMenuItem,
 	SidebarGroupContent,
 	SidebarHeader,
-	SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";

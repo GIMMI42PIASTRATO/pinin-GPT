@@ -3,7 +3,6 @@ import { useChatContext } from "@/contexts/chatContext";
 
 import { Code, GraduationCap, Newspaper, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
-import { setPriority } from "os";
 
 export default function NewConversationTemplate() {
 	const [activeButtonId, setActiveButtonId] = useState<number | null>(null);

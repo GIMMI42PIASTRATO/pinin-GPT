@@ -27,13 +27,13 @@ export default function ChatMessages() {
 	}
 
 	// Find the id of the last message of the model
-	const modelMessages = messages.filter(
-		(message) => message.role !== "user" && message.role !== "system"
-	);
-	const lastModelMessageId =
-		modelMessages.length > 0
-			? modelMessages[modelMessages.length - 1].id
-			: null;
+	// const modelMessages = messages.filter(
+	// 	(message) => message.role !== "user" && message.role !== "system"
+	// );
+	// const lastModelMessageId =
+	// 	modelMessages.length > 0
+	// 		? modelMessages[modelMessages.length - 1].id
+	// 		: null;
 
 	return (
 		<>
