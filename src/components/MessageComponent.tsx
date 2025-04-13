@@ -15,7 +15,7 @@ export function ModelMessage({
 	className,
 }: {
 	children: string;
-	className: string;
+	className?: string;
 }) {
 	return <div className={cn(className)}>{children}</div>;
 }

@@ -45,11 +45,11 @@ export default function ChatMessages() {
 				) : (
 					<ModelMessage
 						key={message.id}
-						className={
-							message.id === lastModelMessageId
-								? "min-h-[calc(100vh-20rem)]"
-								: ""
-						}
+						// className={
+						// 	message.id === lastModelMessageId
+						// 		? "min-h-[calc(100vh-20rem)]"
+						// 		: ""
+						// }
 					>
 						{message.content}
 					</ModelMessage>
