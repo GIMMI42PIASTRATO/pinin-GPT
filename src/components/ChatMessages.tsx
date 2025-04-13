@@ -20,14 +20,16 @@ export default function ChatMessages() {
 		scrollToBottom();
 	}, [messages, isLoading]);
 
-	// console.log(messages.length);
+	console.log("👀 Messages array while rendering:", messages);
 
 	if (messages.length === 0) {
 		return <NewConversationTemplate />;
 	}
 
 	// Find the id of the last message of the model
-	const modelMessages = messages.filter((message) => message.role !== "user");
+	const modelMessages = messages.filter(
+		(message) => message.role !== "user" && message.role !== "system"
+	);
 	const lastModelMessageId =
 		modelMessages.length > 0
 			? modelMessages[modelMessages.length - 1].id

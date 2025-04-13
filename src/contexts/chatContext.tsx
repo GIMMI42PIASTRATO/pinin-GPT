@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useState, useContext, ReactNode } from "react";
+import {
+	createContext,
+	useState,
+	useEffect,
+	useContext,
+	ReactNode,
+} from "react";
 import { ChatMessage, ChatContextType } from "@/types/chatContextTypes";
 
 // Create the context with default values
@@ -10,12 +16,7 @@ const ChatContext = createContext<ChatContextType>({
 	isLoading: false,
 	error: null,
 	setCurrentPrompt: () => {},
-	addMessage: (content: string, role: "user" | "assistant") => ({
-		id: "",
-		content,
-		role,
-		timestamp: new Date(),
-	}),
+	setMessages: () => {},
 	clearMessages: () => {},
 	setError: () => {},
 	setIsLoading: () => {},
@@ -27,21 +28,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [currentPrompt, setCurrentPrompt] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	const addMessage = (
-		content: string,
-		role: "user" | "assistant"
-	): ChatMessage => {
-		const newMessage: ChatMessage = {
-			id: crypto.randomUUID(),
-			content,
-			role,
-			timestamp: new Date(),
-		};
-		setMessages((prev) => [...prev, newMessage]);
-
-		return newMessage;
-	};
 
 	const clearMessages = () => {
 		setMessages([]);
@@ -55,7 +41,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 				isLoading,
 				error,
 				setCurrentPrompt,
-				addMessage,
+				setMessages,
 				clearMessages,
 				setError,
 				setIsLoading,

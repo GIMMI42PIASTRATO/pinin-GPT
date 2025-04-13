@@ -25,6 +25,7 @@ import { sendQuestion } from "@/actions/chat";
 
 // Types
 import { InputPromptTypes } from "@/types/propTypes";
+import { ChatMessage } from "@/types/chatContextTypes";
 
 // zod schema
 import { PromptSchema } from "@/schema";
@@ -36,7 +37,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		messages,
 		currentPrompt,
 		setCurrentPrompt,
-		addMessage,
+		setMessages,
 		setError,
 		setIsLoading,
 	} = useChatContext();
@@ -51,32 +52,53 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 	// Sync the field of the form with currentPrompt when it changes
 	useEffect(() => {
+		console.log("💬 Current prompt: ", currentPrompt);
 		form.setValue("prompt", currentPrompt);
 	}, [currentPrompt, form]);
 
 	const onSubmit = (formData: FormSchema) => {
-		console.log("Submitting data: ", formData);
+		console.log("📬 Submitting data: ", formData);
 		setError(null);
-		addMessage(formData.prompt, "user");
+
+		if (!formData.prompt || formData.prompt.trim() === "") {
+			return; // Do not send empty message
+		}
+
+		// Costruisci il nuovo messaggio
+		const newMessage: ChatMessage = {
+			id: crypto.randomUUID(),
+			content: formData.prompt,
+			role: "user",
+			timestamp: new Date(),
+		};
+
+		// Crea l’array aggiornato dei messaggi
+		const updatedMessages = [...messages, newMessage];
+		setMessages(updatedMessages); // aggiorna manualmente lo stato
+
 		setCurrentPrompt("");
+		form.reset();
 		setIsLoading(true);
 
 		startTransition(() => {
-			sendQuestion(messages)
+			sendQuestion(updatedMessages)
 				.then(async (response) => {
 					if (response.error) {
 						setError(response.error);
 					}
 					if (response.message) {
-						// Un comment if you want to add a delay
-						// await new Promise<void>((resolve) =>
-						// 	setTimeout(resolve, 5000)
-						// );
+						// Aggiungi il messaggio del modello alla fine
+						const assistantMessage: ChatMessage = {
+							id: crypto.randomUUID(),
+							content: response.message,
+							role: "assistant",
+							timestamp: new Date(),
+						};
 
-						addMessage(response.message, "assistant");
+						setMessages((prev) => [...prev, assistantMessage]);
 					}
 
-					console.log("☕️ My message:", response.message);
+					console.log("🤖 Assistant message:", response.message);
 				})
 				.catch((error) => {
 					setError(error.message || "Something went wrong");

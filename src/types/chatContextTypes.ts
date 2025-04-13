@@ -10,9 +10,9 @@ export interface ChatContextType {
 	currentPrompt: string;
 	isLoading: boolean;
 	error: string | null;
-	setCurrentPrompt: (prompt: string) => void;
-	addMessage: (content: string, role: "user" | "assistant") => ChatMessage;
+	setCurrentPrompt: React.Dispatch<React.SetStateAction<string>>;
+	setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 	clearMessages: () => void;
-	setError: (error: string | null) => void;
-	setIsLoading: (isLoading: boolean) => void;
+	setError: React.Dispatch<React.SetStateAction<string | null>>;
+	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
