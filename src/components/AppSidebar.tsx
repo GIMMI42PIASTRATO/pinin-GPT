@@ -10,9 +10,10 @@ import {
 	SidebarHeader,
 	SidebarFooter,
 } from "@/components/ui/sidebar";
-import { SignedOut, SignedIn, UserButton } from "@clerk/nextjs";
+import { SignedOut, SignedIn } from "@clerk/nextjs";
 import { Calendar, Home, Inbox, LogIn, Search, Settings } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
+import UserButtonComponent from "@/components/UserButtonComponent";
 import Link from "next/link";
 
 export default function AppSidebar() {
@@ -72,12 +73,7 @@ export default function AppSidebar() {
 			</SidebarContent>
 			<SidebarFooter>
 				<SignedIn>
-					<Button
-						variant="ghost"
-						className="flex-1 justify-start p-4 hover:bg-gray-200"
-					>
-						<UserButton showName={true} />
-					</Button>
+					<UserButtonComponent />
 				</SignedIn>
 				<SignedOut>
 					<Button
