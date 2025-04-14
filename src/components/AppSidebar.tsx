@@ -8,9 +8,12 @@ import {
 	SidebarMenuItem,
 	SidebarGroupContent,
 	SidebarHeader,
+	SidebarFooter,
 } from "@/components/ui/sidebar";
-
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import { SignedOut, SignedIn, UserButton } from "@clerk/nextjs";
+import { Calendar, Home, Inbox, LogIn, Search, Settings } from "lucide-react";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export default function AppSidebar() {
 	const items = [
@@ -42,13 +45,13 @@ export default function AppSidebar() {
 	];
 
 	return (
-		<Sidebar>
+		<Sidebar className="z-[60]">
+			<SidebarHeader className="flex justify-center items-center">
+				<h1 className="flex h-8 shrink-0 items-center justify-center text-lg font-bold transition-opacity delay-75 duration-75">
+					Pinin CHAT
+				</h1>
+			</SidebarHeader>
 			<SidebarContent>
-				<SidebarHeader className="flex justify-center items-center">
-					<h1 className="flex h-8 shrink-0 items-center justify-center text-lg font-bold transition-opacity delay-75 duration-75">
-						Pinin CHAT
-					</h1>
-				</SidebarHeader>
 				<SidebarGroup>
 					<SidebarGroupLabel>Application</SidebarGroupLabel>
 					<SidebarGroupContent>
@@ -67,6 +70,31 @@ export default function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+			<SidebarFooter>
+				<SignedIn>
+					<Button
+						variant="ghost"
+						className="flex-1 justify-start p-4 hover:bg-gray-200"
+					>
+						<UserButton showName={true} />
+					</Button>
+				</SignedIn>
+				<SignedOut>
+					<Button
+						asChild
+						variant="ghost"
+						className="flex-1 justify-start p-4 hover:bg-gray-200"
+					>
+						<Link
+							href="/sign-in"
+							className="flex items-center gap-4 text-base"
+						>
+							<LogIn />
+							<span>Login</span>
+						</Link>
+					</Button>
+				</SignedOut>
+			</SidebarFooter>
 		</Sidebar>
 	);
 }
