@@ -129,6 +129,12 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 								e: React.ChangeEvent<HTMLTextAreaElement>
 							) => setCurrentPrompt(e.target.value),
 						})}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && !e.shiftKey) {
+								e.preventDefault();
+								form.handleSubmit(onSubmit)();
+							}
+						}}
 						{...props}
 					/>
 					<Button type="submit" size="icon" disabled={isPending}>
