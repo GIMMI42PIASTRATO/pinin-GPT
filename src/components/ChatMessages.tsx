@@ -5,10 +5,9 @@ import { useChatContext } from "@/contexts/chatContext";
 import { useEffect, useRef } from "react";
 
 // Components
-import NewConversationTemplate from "@/components/NewConversationTemplate";
 import { UserMessage, ModelMessage } from "@/components/MessageComponent";
 
-export default function ChatMessages() {
+export default function ChatMessages({ chatId }: { chatId: string }) {
 	const { messages, error, isLoading } = useChatContext();
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
@@ -21,10 +20,6 @@ export default function ChatMessages() {
 	}, [messages, isLoading]);
 
 	console.log("👀 Messages array while rendering:", messages);
-
-	if (messages.length === 0) {
-		return <NewConversationTemplate />;
-	}
 
 	// Find the id of the last message of the model
 	// const modelMessages = messages.filter(

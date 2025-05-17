@@ -22,6 +22,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [currentPrompt, setCurrentPrompt] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [currentChatId, setCurrentChatId] = useState<string | null>(null);
 
 	const clearMessages = () => {
 		setMessages([]);
@@ -34,6 +35,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 				currentPrompt,
 				isLoading,
 				error,
+				currentChatId,
 				setCurrentPrompt,
 				setMessages,
 				clearMessages,
