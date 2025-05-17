@@ -6,7 +6,11 @@ import { useEffect, useRef } from "react";
 
 // Components
 import NewConversationTemplate from "@/components/NewConversationTemplate";
-import { UserMessage, ModelMessage } from "@/components/MessageComponent";
+import {
+	UserMessage,
+	ModelMessage,
+	ModelTyping,
+} from "@/components/MessageComponent";
 
 export default function ChatMessages() {
 	const { messages, error, isLoading } = useChatContext();
@@ -57,11 +61,7 @@ export default function ChatMessages() {
 				)
 			)}
 
-			{isLoading && (
-				<div className="p-4 rounded-lg animate-pulse">
-					<p>Generando risposta...</p>
-				</div>
-			)}
+			{isLoading && <ModelTyping modelName="Gemma3" />}
 
 			{error && (
 				<div className="bg-red-100 p-4 rounded-lg">

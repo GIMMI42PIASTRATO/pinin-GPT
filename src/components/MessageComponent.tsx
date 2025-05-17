@@ -132,22 +132,31 @@ export function ModelMessage({
 									{...props}
 								/>
 							),
-							code: ({ node, inline, ...props }) =>
-								inline ? (
-									<code
-										className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono"
-										{...props}
-									/>
-								) : (
-									<ScrollArea className="w-full relative my-4 max-h-[400px]">
-										<pre className="bg-muted p-4 rounded-md overflow-x-auto text-xs">
-											<code
-												className="font-mono"
-												{...props}
-											/>
-										</pre>
-									</ScrollArea>
-								),
+							code: ({ node, ...props }) => (
+								// inline ? (
+								// 	<code
+								// 		className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono"
+								// 		{...props}
+								// 	/>
+								// ) : (
+								// 	<ScrollArea className="w-full relative my-4 max-h-[400px]">
+								// 		<pre className="bg-muted p-4 rounded-md overflow-x-auto text-xs">
+								// 			<code
+								// 				className="font-mono"
+								// 				{...props}
+								// 			/>
+								// 		</pre>
+								// 	</ScrollArea>
+								// ),
+								<ScrollArea className="w-full relative my-4 max-h-[400px]">
+									<pre className="bg-muted p-4 rounded-md overflow-x-auto text-xs">
+										<code
+											className="font-mono"
+											{...props}
+										/>
+									</pre>
+								</ScrollArea>
+							),
 							table: ({ node, ...props }) => (
 								<div className="overflow-x-auto my-4">
 									<table
