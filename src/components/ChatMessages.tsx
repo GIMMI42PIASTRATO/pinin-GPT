@@ -45,6 +45,7 @@ export default function ChatMessages() {
 				) : (
 					<ModelMessage
 						key={message.id}
+						modelName="Gemma3"
 						// className={
 						// 	message.id === lastModelMessageId
 						// 		? "min-h-[calc(100vh-20rem)]"
