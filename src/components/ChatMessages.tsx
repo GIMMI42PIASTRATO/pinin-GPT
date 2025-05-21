@@ -13,7 +13,7 @@ import {
 } from "@/components/MessageComponent";
 
 export default function ChatMessages() {
-	const { messages, error, isLoading } = useChatContext();
+	const { messages, error, isLoading, selectedModel } = useChatContext();
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
 	const scrollToBottom = () => {
@@ -49,7 +49,7 @@ export default function ChatMessages() {
 				) : (
 					<ModelMessage
 						key={message.id}
-						modelName="Gemma3"
+						modelName={`${selectedModel.name} ${selectedModel.version}`}
 						// className={
 						// 	message.id === lastModelMessageId
 						// 		? "min-h-[calc(100vh-20rem)]"
@@ -61,7 +61,11 @@ export default function ChatMessages() {
 				)
 			)}
 
-			{isLoading && <ModelTyping modelName="Gemma3" />}
+			{isLoading && (
+				<ModelTyping
+					modelName={`${selectedModel.name} ${selectedModel.version}`}
+				/>
+			)}
 
 			{error && (
 				<div className="bg-red-100 p-4 rounded-lg">

@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 
 // zod
 import { ChatMessagesSchema } from "@/schema";
+import * as z from "zod";
 
 // ollama
 import ollama from "ollama";
@@ -16,21 +17,37 @@ import { defaultPrompt } from "@/data/prompt";
 // drizzle
 import { db } from "@/drizzle/db";
 import { chatsTable, messagesTable } from "@/drizzle/schema";
+import { models } from "@/data/models";
 
-export const sendQuestion = async (messages: ChatMessage[]) => {
-	const validatedMessages = ChatMessagesSchema.safeParse(messages);
+export const sendQuestion = async (
+	messages: ChatMessage[],
+	modelId: string
+) => {
+	const messagesValidation = ChatMessagesSchema.safeParse(messages);
+	const modelIdValidation = z.string().safeParse(modelId);
 
 	// const { userId } = await auth();
 	// if (!userId) {
 	// 	return { error: "Accedi per iniziare a chattare!" };
 	// }
 
-	if (!validatedMessages.success) {
+	if (!messagesValidation.success || !modelIdValidation.success) {
 		console.log("🛑 Invalid data");
 		return { error: "Invalid data" };
 	}
 
-	console.log("✅ Data recived:", validatedMessages.data);
+	// Extract validated data for easier usage
+	const validMessages = messagesValidation.data;
+	const validModelId = modelIdValidation.data;
+
+	if (!!!models.find((model) => validModelId === model.id)) {
+		console.log(`🛑 Model with ID: ${validModelId} not found`);
+		return {
+			error: `Model with ID: ${validModelId} not found`,
+		};
+	}
+
+	console.log("✅ Data recived:", validMessages);
 
 	const systemMessage: ChatMessage = {
 		id: crypto.randomUUID(),
@@ -40,13 +57,13 @@ export const sendQuestion = async (messages: ChatMessage[]) => {
 	};
 	// TODO: be able to select models
 	const response = await ollama.chat({
-		model: "gemma3:1b",
-		messages: [systemMessage, ...validatedMessages.data],
+		model: validModelId,
+		messages: [systemMessage, ...validMessages],
 		stream: false,
 	});
 
 	const { id, content, role, timestamp } =
-		validatedMessages.data[validatedMessages.data.length - 1];
+		validMessages[validMessages.length - 1];
 
 	// if (validatedMessages.data.length === 1) {
 	//     // Message for creating a chat title

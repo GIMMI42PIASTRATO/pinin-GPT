@@ -41,7 +41,6 @@ import { models } from "@/data/models";
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
-	const [selectedModel, setSelectedModel] = useState<ModelType>(models[0]);
 
 	const {
 		messages,
@@ -50,6 +49,8 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		setMessages,
 		setError,
 		setIsLoading,
+		selectedModel,
+		setSelectedModel,
 	} = useChatContext();
 
 	type FormSchema = z.infer<typeof PromptSchema>;
@@ -91,7 +92,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		setIsLoading(true);
 
 		startTransition(() => {
-			sendQuestion(updatedMessages)
+			sendQuestion(updatedMessages, selectedModel.id)
 				.then(async (response) => {
 					if (response.error) {
 						setError(response.error);

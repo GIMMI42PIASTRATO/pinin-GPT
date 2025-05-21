@@ -3,9 +3,9 @@ import type { ModelType } from "@/types/modelSelectionAreaTypes";
 // Mock data for demonstration
 export const models: ModelType[] = [
 	{
-		id: "gemma-3",
+		id: "gemma3:1b",
 		name: "Gemma",
-		version: "3",
+		version: "3:1b",
 		icon: "gemma",
 		isPinned: true,
 		features: ["code", "reasoning"],

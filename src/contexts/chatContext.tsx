@@ -2,6 +2,8 @@
 
 import { createContext, useState, useContext, ReactNode } from "react";
 import { ChatMessage, ChatContextType } from "@/types/chatContextTypes";
+import type { ModelType } from "@/types/modelSelectionAreaTypes";
+import { models } from "@/data/models";
 
 // Create the context with default values
 const ChatContext = createContext<ChatContextType>({
@@ -9,6 +11,8 @@ const ChatContext = createContext<ChatContextType>({
 	currentPrompt: "",
 	isLoading: false,
 	error: null,
+	selectedModel: models[0],
+	setSelectedModel: () => {},
 	setCurrentPrompt: () => {},
 	setMessages: () => {},
 	clearMessages: () => {},
@@ -22,6 +26,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [currentPrompt, setCurrentPrompt] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [selectedModel, setSelectedModel] = useState<ModelType>(models[0]);
 
 	const clearMessages = () => {
 		setMessages([]);
@@ -39,6 +44,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 				clearMessages,
 				setError,
 				setIsLoading,
+				selectedModel,
+				setSelectedModel,
 			}}
 		>
 			{children}
