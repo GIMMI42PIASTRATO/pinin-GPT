@@ -36,7 +36,6 @@ import { ChatMessage } from "@/types/chatContextTypes";
 // zod schema
 import { PromptSchema } from "@/schema";
 import type { ModelType } from "@/types/modelSelectionAreaTypes";
-import { models } from "@/data/models";
 
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
@@ -73,6 +72,12 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 		if (!formData.prompt || formData.prompt.trim() === "") {
 			return; // Do not send empty message
+		}
+
+		// check if the model is selected
+		if (!selectedModel) {
+			setError("Please select a model");
+			return;
 		}
 
 		// Costruisci il nuovo messaggio
@@ -159,7 +164,11 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 							}}
 							{...props}
 						/>
-						<Button type="submit" size="icon" disabled={isPending}>
+						<Button
+							type="submit"
+							size="icon"
+							disabled={isPending || !selectedModel}
+						>
 							<ArrowUp />
 						</Button>
 					</form>
@@ -171,8 +180,9 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 							<PopoverTrigger asChild>
 								<Button variant="ghost">
 									<span>
-										{selectedModel.name}{" "}
-										{selectedModel.version}
+										{selectedModel
+											? `${selectedModel.name} ${selectedModel.version}`
+											: "Seleziona un modello"}
 									</span>
 									<ChevronDown />
 								</Button>

@@ -114,3 +114,28 @@ export const models: ModelType[] = [
 		features: ["code", "reasoning"],
 	},
 ];
+
+// map models to theri respective features
+export const MODEL_FEATURES: Record<
+	string,
+	Array<"web" | "vision" | "code" | "reasoning">
+> = {
+	llama: ["reasoning", "code", "vision", "web"],
+	mistral: ["reasoning", "code"],
+	gemma: ["reasoning", "code", "vision"],
+	phi: ["code", "reasoning"],
+	mixtral: ["reasoning", "code"],
+	yi: ["reasoning", "code"],
+	qwen: ["reasoning", "code", "web"],
+	dolphin: ["reasoning", "code"],
+	codellama: ["code"],
+	vicuna: ["reasoning"],
+	"neural-chat": ["reasoning"],
+	llava: ["vision", "reasoning"],
+	bakllava: ["vision", "reasoning"],
+	moondream: ["vision"],
+	openchat: ["reasoning", "code"],
+	deepseek: ["reasoning", "code", "vision", "web"],
+};
+
+export const PINNED_MODELS = ["gemma", "llama", "deepseek"];

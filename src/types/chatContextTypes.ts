@@ -11,11 +11,15 @@ export interface ChatContextType {
 	currentPrompt: string;
 	isLoading: boolean;
 	error: string | null;
-	selectedModel: ModelType;
-	setSelectedModel: React.Dispatch<React.SetStateAction<ModelType>>;
+	selectedModel: ModelType | null;
+	setSelectedModel: React.Dispatch<React.SetStateAction<ModelType | null>>;
 	setCurrentPrompt: React.Dispatch<React.SetStateAction<string>>;
 	setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 	clearMessages: () => void;
 	setError: React.Dispatch<React.SetStateAction<string | null>>;
 	setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+	models: ModelType[];
+	modelsLoading: boolean;
+	setModels: React.Dispatch<React.SetStateAction<ModelType[]>>;
+	setModelsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }

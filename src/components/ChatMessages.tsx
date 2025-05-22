@@ -39,6 +39,16 @@ export default function ChatMessages() {
 	// 		? modelMessages[modelMessages.length - 1].id
 	// 		: null;
 
+	if (!selectedModel) {
+		return (
+			<div className="bg-red-100 p-4 rounded-lg">
+				<p className="text-red-500">
+					Seleziona un modello per iniziare la conversazione
+				</p>
+			</div>
+		);
+	}
+
 	return (
 		<>
 			{messages.map((message) =>

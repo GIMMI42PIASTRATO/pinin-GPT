@@ -1,9 +1,15 @@
 "use client";
 
-import { createContext, useState, useContext, ReactNode } from "react";
+import {
+	createContext,
+	useState,
+	useContext,
+	ReactNode,
+	useEffect,
+} from "react";
 import { ChatMessage, ChatContextType } from "@/types/chatContextTypes";
 import type { ModelType } from "@/types/modelSelectionAreaTypes";
-import { models } from "@/data/models";
+import { getInstalledModels } from "@/actions/models";
 
 // Create the context with default values
 const ChatContext = createContext<ChatContextType>({
@@ -11,13 +17,17 @@ const ChatContext = createContext<ChatContextType>({
 	currentPrompt: "",
 	isLoading: false,
 	error: null,
-	selectedModel: models[0],
+	selectedModel: null,
 	setSelectedModel: () => {},
 	setCurrentPrompt: () => {},
 	setMessages: () => {},
 	clearMessages: () => {},
 	setError: () => {},
 	setIsLoading: () => {},
+	models: [],
+	modelsLoading: false,
+	setModels: () => {},
+	setModelsLoading: () => {},
 });
 
 // Provider component
@@ -26,7 +36,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 	const [currentPrompt, setCurrentPrompt] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [selectedModel, setSelectedModel] = useState<ModelType>(models[0]);
+	const [models, setModels] = useState<ModelType[]>([]);
+	const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
+	const [modelsLoading, setModelsLoading] = useState(true);
+
+	useEffect(() => {
+		async function loadModels() {
+			try {
+				setModelsLoading(true);
+				const installedModels = await getInstalledModels();
+				setModels(installedModels);
+				setSelectedModel(installedModels[0] || null);
+			} catch (err) {
+				console.error("Failed to load models:", err);
+				setError("Failed to load models. Please try again later.");
+			} finally {
+				setModelsLoading(false);
+			}
+		}
+		loadModels();
+	}, []);
 
 	const clearMessages = () => {
 		setMessages([]);
@@ -46,6 +75,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 				setIsLoading,
 				selectedModel,
 				setSelectedModel,
+				models,
+				modelsLoading,
+				setModels,
+				setModelsLoading,
 			}}
 		>
 			{children}

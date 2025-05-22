@@ -3,16 +3,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Star } from "lucide-react";
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import type {
 	ModelType,
 	ModelSelectionAreaProps,
 } from "@/types/modelSelectionAreaTypes.ts";
-import { models } from "@/data/models";
+import { getInstalledModels } from "@/actions/models";
+import { useChatContext } from "@/contexts/chatContext";
 
 export function ModelSelectionArea({ onSelectModel }: ModelSelectionAreaProps) {
 	const [searchTerm, setSearchTerm] = useState("");
+	const {
+		models,
+		modelsLoading,
+		error,
+		setModels,
+		setError,
+		setModelsLoading,
+	} = useChatContext();
 
 	const filteredModels = searchTerm
 		? models.filter((model) =>
@@ -95,133 +103,171 @@ export function ModelSelectionArea({ onSelectModel }: ModelSelectionAreaProps) {
 			</div>
 
 			<div className="overflow-hidden flex-grow">
-				<ScrollArea className="h-[300px]">
-					<div className="p-3">
-						{pinnedModels.length > 0 && (
-							<>
-								<div className="flex items-center gap-2 mb-2">
-									<Star className="w-4 h-4 text-muted-foreground" />
-									<h3 className="font-medium text-sm">
-										Pinned
-									</h3>
-								</div>
-
-								<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-									{pinnedModels.map((model) => (
-										<button
-											key={model.id}
-											className="flex flex-col items-center p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-											onClick={() =>
-												handleModelSelect(model)
-											}
-										>
-											<div className="w-8 h-8 flex items-center justify-center mb-1">
-												<div
-													className="rounded-full p-2 w-full h-full flex items-center justify-center"
-													style={{
-														backgroundColor:
-															model.name ===
-															"Gemini"
-																? "rgb(243, 232, 255)"
-																: model.name ===
-																  "GPT"
-																? "rgb(243, 244, 246)"
-																: "rgb(219, 234, 254)",
-													}}
-												>
-													{model.name.charAt(0)}
-												</div>
-											</div>
-											<span className="font-medium text-xs">
-												{model.name}
-											</span>
-											<span className="text-xs text-gray-600">
-												{model.version}
-											</span>
-
-											{model.badgeText && (
-												<span className="text-xs bg-gray-200 px-1 py-0.5 rounded mt-0.5 text-[10px]">
-													{model.badgeText}
-												</span>
-											)}
-
-											<div className="flex gap-1 mt-1">
-												{model.features?.map(
-													(feature) => (
-														<div
-															key={`${model.id}-${feature}`}
-															className="scale-75"
-														>
-															{getFeatureIcon(
-																feature
-															)}
-														</div>
-													)
-												)}
-											</div>
-										</button>
-									))}
-								</div>
-							</>
-						)}
-
-						<div className="flex items-center gap-2 mb-2">
-							<h3 className="font-medium text-sm">Others</h3>
-						</div>
-
-						<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-							{otherModels.map((model) => (
-								<button
-									key={model.id}
-									className="flex flex-col items-center p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-									onClick={() => handleModelSelect(model)}
-								>
-									<div className="w-8 h-8 flex items-center justify-center mb-1">
-										<div
-											className="rounded-full p-2 w-full h-full flex items-center justify-center"
-											style={{
-												backgroundColor:
-													model.name === "Gemini"
-														? "rgb(243, 232, 255)"
-														: model.name === "GPT"
-														? "rgb(243, 244, 246)"
-														: "rgb(219, 234, 254)",
-											}}
-										>
-											{model.name.charAt(0)}
-										</div>
-									</div>
-									<span className="font-medium text-xs">
-										{model.name}
-									</span>
-									<span className="text-xs text-gray-600">
-										{model.version}
-									</span>
-
-									{model.badgeText && (
-										<span className="text-xs bg-gray-200 px-1 py-0.5 rounded mt-0.5 text-[10px]">
-											{model.badgeText}
-										</span>
-									)}
-
-									<div className="flex gap-1 mt-1">
-										{model.features?.map((feature) => (
-											<div
-												key={`${model.id}-${feature}`}
-												className="scale-75"
-											>
-												{getFeatureIcon(feature)}
-											</div>
-										))}
-									</div>
-								</button>
-							))}
+				{modelsLoading ? (
+					<div className="h-full flex items-center justify-center p-4">
+						<div className="flex flex-col items-center gap-2">
+							<div className="h-5 w-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+							<p className="text-sm text-gray-500">
+								Loading models...
+							</p>
 						</div>
 					</div>
-				</ScrollArea>
+				) : error ? (
+					<div className="h-full flex items-center justify-center p-4">
+						<div className="flex flex-col bg-red-50 text-red-500 p-3 rounded-md max-w-xs text-center gap-2 justify-center items-center">
+							<p className="font-medium">Error</p>
+							<p className="text-sm">{error}</p>
+							<Button
+								onClick={() => {
+									setError(null);
+									setModelsLoading(true);
+									getInstalledModels()
+										.then(setModels)
+										.catch((err) => {
+											console.error(err);
+											setError(
+												"Failed to load models. Please try again later."
+											);
+										})
+										.finally(() => setModelsLoading(false));
+								}}
+								variant="destructive"
+								className="w-min"
+							>
+								Try Again
+							</Button>
+						</div>
+					</div>
+				) : (
+					<ScrollArea className="h-[300px]">
+						<div className="p-3">
+							{pinnedModels.length > 0 && (
+								<>
+									<div className="flex items-center gap-2 mb-2">
+										<Star className="w-4 h-4 text-muted-foreground" />
+										<h3 className="font-medium text-sm">
+											Pinned
+										</h3>
+									</div>
+
+									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+										{pinnedModels.map((model) => (
+											<button
+												key={model.id}
+												className="flex flex-col items-center p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+												onClick={() =>
+													handleModelSelect(model)
+												}
+											>
+												<div className="w-8 h-8 flex items-center justify-center mb-1">
+													<div
+														className="rounded-full p-2 w-full h-full flex items-center justify-center"
+														style={{
+															backgroundColor:
+																model.name ===
+																"Gemini"
+																	? "rgb(243, 232, 255)"
+																	: model.name ===
+																	  "GPT"
+																	? "rgb(243, 244, 246)"
+																	: "rgb(219, 234, 254)",
+														}}
+													>
+														{model.name.charAt(0)}
+													</div>
+												</div>
+												<span className="font-medium text-xs">
+													{model.name}
+												</span>
+												<span className="text-xs text-gray-600">
+													{model.version}
+												</span>
+
+												{model.badgeText && (
+													<span className="text-xs bg-gray-200 px-1 py-0.5 rounded mt-0.5 text-[10px]">
+														{model.badgeText}
+													</span>
+												)}
+
+												<div className="flex gap-1 mt-1">
+													{model.features?.map(
+														(feature) => (
+															<div
+																key={`${model.id}-${feature}`}
+																className="scale-75"
+															>
+																{getFeatureIcon(
+																	feature
+																)}
+															</div>
+														)
+													)}
+												</div>
+											</button>
+										))}
+									</div>
+								</>
+							)}
+
+							<div className="flex items-center gap-2 mb-2">
+								<h3 className="font-medium text-sm">Others</h3>
+							</div>
+
+							<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+								{otherModels.map((model) => (
+									<button
+										key={model.id}
+										className="flex flex-col items-center p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+										onClick={() => handleModelSelect(model)}
+									>
+										<div className="w-8 h-8 flex items-center justify-center mb-1">
+											<div
+												className="rounded-full p-2 w-full h-full flex items-center justify-center"
+												style={{
+													backgroundColor:
+														model.name === "Gemini"
+															? "rgb(243, 232, 255)"
+															: model.name ===
+															  "GPT"
+															? "rgb(243, 244, 246)"
+															: "rgb(219, 234, 254)",
+												}}
+											>
+												{model.name.charAt(0)}
+											</div>
+										</div>
+										<span className="font-medium text-xs">
+											{model.name}
+										</span>
+										<span className="text-xs text-gray-600">
+											{model.version}
+										</span>
+
+										{model.badgeText && (
+											<span className="text-xs bg-gray-200 px-1 py-0.5 rounded mt-0.5 text-[10px]">
+												{model.badgeText}
+											</span>
+										)}
+
+										<div className="flex gap-1 mt-1">
+											{model.features?.map((feature) => (
+												<div
+													key={`${model.id}-${feature}`}
+													className="scale-75"
+												>
+													{getFeatureIcon(feature)}
+												</div>
+											))}
+										</div>
+									</button>
+								))}
+							</div>
+						</div>
+					</ScrollArea>
+				)}
 			</div>
 
-			<div className="border-t p-2 flex justify-between items-center flex-shrink-0">
+			{/* <div className="border-t p-2 flex justify-between items-center flex-shrink-0">
 				<button className="text-xs flex items-center gap-1 text-pink-600">
 					<Star className="w-3 h-3" />
 					Favorites
@@ -232,7 +278,7 @@ export function ModelSelectionArea({ onSelectModel }: ModelSelectionAreaProps) {
 						<Search className="h-3 w-3" />
 					</Button>
 				</div>
-			</div>
+			</div> */}
 		</div>
 	);
 }
