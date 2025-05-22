@@ -1,5 +1,5 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";
+import { SidebarProvider /**SidebarTrigger */ } from "@/components/ui/sidebar";
+// import AppSidebar from "@/components/AppSidebar";
 import { cookies } from "next/headers";
 
 export default async function ChatLayout({

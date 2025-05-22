@@ -65,8 +65,8 @@ export const sendQuestion = async (
 		stream: false,
 	});
 
-	const { id, content, role, timestamp } =
-		validMessages[validMessages.length - 1];
+	// const { id, content, role, timestamp } =
+	// 	validMessages[validMessages.length - 1];
 
 	// if (validatedMessages.data.length === 1) {
 	//     // Message for creating a chat title

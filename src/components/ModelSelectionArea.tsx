@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type {
 	ModelType,
 	ModelSelectionAreaProps,

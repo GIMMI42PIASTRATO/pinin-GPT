@@ -1,10 +1,9 @@
 import { cn } from "@/lib/utils";
-import ReactMarkdown, { ExtraProps } from "react-markdown";
+import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { JSX } from "react";
 
 export function UserMessage({
 	children,
@@ -75,64 +74,64 @@ export function ModelMessage({
 					<ReactMarkdown
 						rehypePlugins={[rehypeSanitize]}
 						components={{
-							p: ({ node, ...props }) => (
+							p: ({ ...props }) => (
 								<p
 									className="text-sm leading-relaxed mb-4 last:mb-0"
 									{...props}
 								/>
 							),
-							h1: ({ node, ...props }) => (
+							h1: ({ ...props }) => (
 								<h1
 									className="text-2xl font-bold mt-6 mb-4 first:mt-1 border-b pb-2"
 									{...props}
 								/>
 							),
-							h2: ({ node, ...props }) => (
+							h2: ({ ...props }) => (
 								<h2
 									className="text-xl font-bold mt-5 mb-3 first:mt-1"
 									{...props}
 								/>
 							),
-							h3: ({ node, ...props }) => (
+							h3: ({ ...props }) => (
 								<h3
 									className="text-lg font-semibold mt-4 mb-2 first:mt-1"
 									{...props}
 								/>
 							),
-							h4: ({ node, ...props }) => (
+							h4: ({ ...props }) => (
 								<h4
 									className="text-base font-semibold mt-4 mb-2 first:mt-1"
 									{...props}
 								/>
 							),
-							ul: ({ node, ...props }) => (
+							ul: ({ ...props }) => (
 								<ul
 									className="list-disc pl-6 mb-4 text-sm space-y-1"
 									{...props}
 								/>
 							),
-							ol: ({ node, ...props }) => (
+							ol: ({ ...props }) => (
 								<ol
 									className="list-decimal pl-6 mb-4 text-sm space-y-1"
 									{...props}
 								/>
 							),
-							li: ({ node, ...props }) => (
+							li: ({ ...props }) => (
 								<li className="mb-1" {...props} />
 							),
-							a: ({ node, ...props }) => (
+							a: ({ ...props }) => (
 								<a
 									className="text-primary hover:underline hover:text-primary/80 transition-colors"
 									{...props}
 								/>
 							),
-							blockquote: ({ node, ...props }) => (
+							blockquote: ({ ...props }) => (
 								<blockquote
 									className="border-l-4 border-muted pl-4 italic my-4"
 									{...props}
 								/>
 							),
-							code: ({ node, ...props }) => (
+							code: ({ ...props }) => (
 								// inline ? (
 								// 	<code
 								// 		className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono"
@@ -157,7 +156,7 @@ export function ModelMessage({
 									</pre>
 								</ScrollArea>
 							),
-							table: ({ node, ...props }) => (
+							table: ({ ...props }) => (
 								<div className="overflow-x-auto my-4">
 									<table
 										className="w-full border-collapse text-sm"
@@ -165,31 +164,31 @@ export function ModelMessage({
 									/>
 								</div>
 							),
-							thead: ({ node, ...props }) => (
+							thead: ({ ...props }) => (
 								<thead
 									className="bg-muted font-medium"
 									{...props}
 								/>
 							),
-							tbody: ({ node, ...props }) => (
+							tbody: ({ ...props }) => (
 								<tbody className="divide-y" {...props} />
 							),
-							tr: ({ node, ...props }) => (
+							tr: ({ ...props }) => (
 								<tr className="even:bg-muted/50" {...props} />
 							),
-							th: ({ node, ...props }) => (
+							th: ({ ...props }) => (
 								<th
 									className="py-2 px-3 text-left"
 									{...props}
 								/>
 							),
-							td: ({ node, ...props }) => (
+							td: ({ ...props }) => (
 								<td className="py-2 px-3" {...props} />
 							),
-							hr: ({ node, ...props }) => (
+							hr: ({ ...props }) => (
 								<hr className="my-6 border-muted" {...props} />
 							),
-							img: ({ node, ...props }) => (
+							img: ({ ...props }) => (
 								<img
 									className="max-w-full h-auto rounded-md my-4"
 									{...props}
