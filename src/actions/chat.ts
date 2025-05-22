@@ -1,7 +1,7 @@
 "use server";
 
 // clerk
-import { auth } from "@clerk/nextjs/server";
+// import { auth } from "@clerk/nextjs/server";
 
 // zod
 import { ChatMessagesSchema } from "@/schema";
@@ -15,9 +15,8 @@ import { ChatMessage } from "@/types/chatContextTypes";
 import { defaultPrompt } from "@/data/prompt";
 
 // drizzle
-import { db } from "@/drizzle/db";
-import { chatsTable, messagesTable } from "@/drizzle/schema";
-import { models } from "@/data/models";
+// import { db } from "@/drizzle/db";
+// import { chatsTable, messagesTable } from "@/drizzle/schema";
 
 export const sendQuestion = async (
 	messages: ChatMessage[],
@@ -40,7 +39,11 @@ export const sendQuestion = async (
 	const validMessages = messagesValidation.data;
 	const validModelId = modelIdValidation.data;
 
-	if (!!!models.find((model) => validModelId === model.id)) {
+	// console.log("🆘" + !models.find((model) => model.id === validModelId));
+
+	const installedModels = (await ollama.list()).models;
+
+	if (!installedModels.find((model) => model.name === validModelId)) {
 		console.log(`🛑 Model with ID: ${validModelId} not found`);
 		return {
 			error: `Model with ID: ${validModelId} not found`,
