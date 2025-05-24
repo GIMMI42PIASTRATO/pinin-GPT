@@ -18,6 +18,9 @@ import { defaultPrompt } from "@/data/prompt";
 // import { db } from "@/drizzle/db";
 // import { chatsTable, messagesTable } from "@/drizzle/schema";
 
+// uuid
+import { v4 as uuidv4 } from "uuid";
+
 export const sendQuestion = async (
 	messages: ChatMessage[],
 	modelId: string
@@ -53,7 +56,7 @@ export const sendQuestion = async (
 	console.log("✅ Data recived:", validMessages);
 
 	const systemMessage: ChatMessage = {
-		id: crypto.randomUUID(),
+		id: uuidv4(),
 		content: defaultPrompt.system,
 		role: "system",
 		timestamp: new Date(),
@@ -71,7 +74,7 @@ export const sendQuestion = async (
 	// if (validatedMessages.data.length === 1) {
 	//     // Message for creating a chat title
 	// 	const titleRequestMessage: ChatMessage = {
-	// 		id: crypto.randomUUID(),
+	// 		id: uuidv4(),
 	// 		content: defaultPrompt.generateTitle,
 	// 		role: "system",
 	// 		timestamp: new Date(),
@@ -89,7 +92,7 @@ export const sendQuestion = async (
 
 	//     // New chatsTable filed
 	// 	const newChat: typeof chatsTable.$inferInsert = {
-	// 		id: crypto.randomUUID(),
+	// 		id: uuidv4(),
 	// 		chatName: titleResponse.message.content,
 	// 		userId,
 	// 	};

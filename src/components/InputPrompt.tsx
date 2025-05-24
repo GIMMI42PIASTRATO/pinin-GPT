@@ -37,6 +37,9 @@ import { ChatMessage } from "@/types/chatContextTypes";
 import { PromptSchema } from "@/schema";
 import type { ModelType } from "@/types/modelSelectionAreaTypes";
 
+// uuid
+import { v4 as uuidv4 } from "uuid";
+
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
@@ -82,7 +85,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 		// Costruisci il nuovo messaggio
 		const newMessage: ChatMessage = {
-			id: crypto.randomUUID(),
+			id: uuidv4(),
 			content: formData.prompt,
 			role: "user",
 			timestamp: new Date(),
@@ -105,7 +108,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					if (response.message) {
 						// Aggiungi il messaggio del modello alla fine
 						const assistantMessage: ChatMessage = {
-							id: crypto.randomUUID(),
+							id: uuidv4(),
 							content: response.message,
 							role: "assistant",
 							timestamp: new Date(),
