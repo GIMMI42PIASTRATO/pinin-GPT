@@ -1,0 +1,1 @@
+ALTER TABLE `chats` RENAME COLUMN `chat_name` TO `title`;

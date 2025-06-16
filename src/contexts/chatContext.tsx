@@ -18,6 +18,8 @@ const ChatContext = createContext<ChatContextType>({
 	isLoading: false,
 	error: null,
 	selectedModel: null,
+	currentChatId: null,
+	setCurrentChatId: () => {},
 	setSelectedModel: () => {},
 	setCurrentPrompt: () => {},
 	setMessages: () => {},
@@ -31,14 +33,27 @@ const ChatContext = createContext<ChatContextType>({
 });
 
 // Provider component
-export function ChatProvider({ children }: { children: ReactNode }) {
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
+interface ChatProviderProps {
+	children: ReactNode;
+	initialChatId?: string | null;
+	initialMessages?: ChatMessage[];
+}
+
+export function ChatProvider({
+	children,
+	initialChatId = null,
+	initialMessages = [],
+}: ChatProviderProps) {
+	const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 	const [currentPrompt, setCurrentPrompt] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [models, setModels] = useState<ModelType[]>([]);
 	const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
 	const [modelsLoading, setModelsLoading] = useState(true);
+	const [currentChatId, setCurrentChatId] = useState<string | null>(
+		initialChatId
+	);
 
 	useEffect(() => {
 		async function loadModels() {
@@ -59,6 +74,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
 	const clearMessages = () => {
 		setMessages([]);
+		setCurrentChatId(null);
 	};
 
 	return (
@@ -68,6 +84,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 				currentPrompt,
 				isLoading,
 				error,
+				currentChatId,
+				setCurrentChatId,
 				setCurrentPrompt,
 				setMessages,
 				clearMessages,

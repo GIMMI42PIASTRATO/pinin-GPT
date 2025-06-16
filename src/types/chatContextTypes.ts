@@ -12,6 +12,8 @@ export interface ChatContextType {
 	isLoading: boolean;
 	error: string | null;
 	selectedModel: ModelType | null;
+	currentChatId: string | null;
+	setCurrentChatId: React.Dispatch<React.SetStateAction<string | null>>;
 	setSelectedModel: React.Dispatch<React.SetStateAction<ModelType | null>>;
 	setCurrentPrompt: React.Dispatch<React.SetStateAction<string>>;
 	setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
