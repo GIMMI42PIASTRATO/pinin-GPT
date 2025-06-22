@@ -127,9 +127,9 @@ export async function getUserChats(userId: string) {
 			.where(eq(chatsTable.userId, userId))
 			.orderBy(desc(chatsTable.timestamp));
 
-		return chats;
+		return { chats, error: null };
 	} catch (error) {
 		console.error("Error getting user chats:", error);
-		return [];
+		return { chats: [], error: "Failed to load chats" };
 	}
 }

@@ -34,6 +34,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { UserChat } from "@/types/chatTypes";
 
 export default function AppSidebar() {
 	const { user, isLoaded } = useUser();
@@ -42,6 +43,7 @@ export default function AppSidebar() {
 	const [pinnedChats, setPinnedChats] = useState<any[]>([]);
 	const [recentChats, setRecentChats] = useState<any[]>([]);
 	const [updatingPinId, setUpdatingPinId] = useState<string | null>(null);
+	const [error, setError] = useState<string | null>(null);
 	const pathname = usePathname();
 	const router = useRouter();
 
@@ -50,21 +52,21 @@ export default function AppSidebar() {
 			// Only load chats if user is authenticated
 			if (user && isLoaded) {
 				setIsLoading(true);
-				try {
-					const userChats = await getUserChats(user.id);
-					setChats(userChats);
+				const { chats: userChats, error } = await getUserChats(user.id);
+				setIsLoading(false);
 
-					// Separate pinned and recent chats
-					const pinned = userChats.filter((chat) => chat.pinned);
-					const recent = userChats.filter((chat) => !chat.pinned);
-
-					setPinnedChats(pinned);
-					setRecentChats(recent);
-				} catch (error) {
+				if (error) {
 					console.error("Error loading chats:", error);
-				} finally {
-					setIsLoading(false);
+					setError("Failed to load chats. Please try again later.");
+					return;
 				}
+
+				setChats(userChats);
+				// Separate pinned and recent chats
+				const { pinned, recent } = pinnedAndRecentChats(userChats);
+
+				setPinnedChats(pinned);
+				setRecentChats(recent);
 			} else if (isLoaded && !user) {
 				// Clear chats if user is not authenticated
 				setChats([]);
@@ -76,6 +78,12 @@ export default function AppSidebar() {
 
 		loadChats();
 	}, [user, isLoaded]);
+
+	const pinnedAndRecentChats = (userChats: UserChat[]) => {
+		const pinned = userChats.filter((chat) => chat.pinned);
+		const recent = userChats.filter((chat) => !chat.pinned);
+		return { pinned, recent };
+	};
 
 	const handleTogglePin = async (chatId: string, e: React.MouseEvent) => {
 		e.preventDefault();
@@ -153,6 +161,41 @@ export default function AppSidebar() {
 				{isLoading ? (
 					<div className="flex justify-center py-4">
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+					</div>
+				) : error && user ? (
+					<div className="h-full flex items-center justify-center p-4">
+						<div className="flex flex-col bg-red-50 text-red-500 p-3 rounded-md max-w-xs text-center gap-2 justify-center items-center">
+							<p className="font-medium">Error</p>
+							<p className="text-sm">{error}</p>
+							<Button
+								onClick={() => {
+									setError(null);
+									setIsLoading(true);
+									getUserChats(user.id)
+										.then(({ chats: userChats, error }) => {
+											if (error) {
+												throw new Error(error);
+											}
+											setChats(userChats);
+											const { pinned, recent } =
+												pinnedAndRecentChats(userChats);
+											setPinnedChats(pinned);
+											setRecentChats(recent);
+										})
+										.catch((err) => {
+											console.error(err);
+											setError(
+												"Failed to load chats. Please try again later."
+											);
+										})
+										.finally(() => setIsLoading(false));
+								}}
+								variant="destructive"
+								className="w-min"
+							>
+								Try Again
+							</Button>
+						</div>
 					</div>
 				) : (
 					<>
