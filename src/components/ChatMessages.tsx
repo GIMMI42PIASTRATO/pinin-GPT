@@ -14,9 +14,16 @@ import {
 } from "@/components/MessageComponent";
 
 export default function ChatMessages() {
-	const { messages, error, isLoading, selectedModel, currentChatId } =
-		useChatContext();
-	const { user } = useUser();
+	const {
+		messages,
+		error,
+		isLoading,
+		selectedModel,
+		modelsLoading,
+		optimisticModelsLoaded,
+		currentChatId,
+	} = useChatContext();
+	const { user, isLoaded } = useUser();
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
 	const scrollToBottom = () => {
@@ -42,6 +49,24 @@ export default function ChatMessages() {
 	// 	modelMessages.length > 0
 	// 		? modelMessages[modelMessages.length - 1].id
 	// 		: null;
+
+	if (modelsLoading && !optimisticModelsLoaded) {
+		return (
+			<div className="flex justify-center items-center h-40">
+				<span className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></span>
+				<span className="ml-2">Caricamento modelli...</span>
+			</div>
+		);
+	}
+
+	if (!isLoaded) {
+		return (
+			<div className="flex justify-center items-center h-40">
+				<span className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></span>
+				<span className="ml-2">Caricamento utente...</span>
+			</div>
+		);
+	}
 
 	if (!selectedModel) {
 		return (

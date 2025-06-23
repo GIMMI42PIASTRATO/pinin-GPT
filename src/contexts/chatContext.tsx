@@ -30,6 +30,7 @@ const ChatContext = createContext<ChatContextType>({
 	modelsLoading: false,
 	setModels: () => {},
 	setModelsLoading: () => {},
+	optimisticModelsLoaded: false,
 });
 
 // Provider component
@@ -54,17 +55,81 @@ export function ChatProvider({
 	const [currentChatId, setCurrentChatId] = useState<string | null>(
 		initialChatId
 	);
+	const [optimisticModelsLoaded, setOptimisticModelsLoaded] = useState(false);
 
+	//* Caricamento dei modelli SENZA caricamento ottimistico
+	// useEffect(() => {
+	// 	async function loadModels() {
+	// 		try {
+	// 			setModelsLoading(true);
+
+	// 			const savedModelId = localStorage.getItem("selectedModelId");
+
+	// 			const installedModels = await getInstalledModels();
+	// 			setModels(installedModels);
+
+	// 			if (
+	// 				savedModelId &&
+	// 				installedModels.some((model) => model.id === savedModelId)
+	// 			) {
+	// 				const savedModel = installedModels.find(
+	// 					(model) => model.id === savedModelId
+	// 				);
+	// 				setSelectedModel(savedModel!);
+	// 			} else {
+	// 				setSelectedModel(installedModels[0] || null);
+	// 			}
+	// 		} catch (err) {
+	// 			console.error("Failed to load models:", err);
+	// 			setError("Failed to load models. Please try again later.");
+	// 		} finally {
+	// 			setModelsLoading(false);
+	// 		}
+	// 	}
+	// 	loadModels();
+	// }, []);
+
+	//* Caricamento dei modelli CON caricamento ottimistico
 	useEffect(() => {
 		async function loadModels() {
 			try {
 				setModelsLoading(true);
 
-				const savedModelId = localStorage.getItem("selectedModelId");
+				// 1. Caricamento ottimistico da localStorage
+				const cachedModels = localStorage.getItem("installedModels");
+				if (cachedModels) {
+					const parsedModels = JSON.parse(cachedModels);
+					setModels(parsedModels);
+					setOptimisticModelsLoaded(true);
+					// Se vuoi, puoi anche impostare il modello selezionato qui
+					const savedModelId =
+						localStorage.getItem("selectedModelId");
+					if (
+						savedModelId &&
+						parsedModels.some(
+							(model: ModelType) => model.id === savedModelId
+						)
+					) {
+						const savedModel = parsedModels.find(
+							(model: ModelType) => model.id === savedModelId
+						);
+						setSelectedModel(savedModel!);
+					} else {
+						setSelectedModel(parsedModels[0] || null);
+					}
+				} else {
+					setOptimisticModelsLoaded(false);
+				}
 
+				// 2. Fetch reale dei modelli
 				const installedModels = await getInstalledModels();
 				setModels(installedModels);
+				localStorage.setItem(
+					"installedModels",
+					JSON.stringify(installedModels)
+				);
 
+				const savedModelId = localStorage.getItem("selectedModelId");
 				if (
 					savedModelId &&
 					installedModels.some((model) => model.id === savedModelId)
@@ -111,6 +176,7 @@ export function ChatProvider({
 				modelsLoading,
 				setModels,
 				setModelsLoading,
+				optimisticModelsLoaded,
 			}}
 		>
 			{children}

@@ -24,4 +24,5 @@ export interface ChatContextType {
 	modelsLoading: boolean;
 	setModels: React.Dispatch<React.SetStateAction<ModelType[]>>;
 	setModelsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+	optimisticModelsLoaded: boolean;
 }
