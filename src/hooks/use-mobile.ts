@@ -13,11 +13,12 @@ export function useIsMobile() {
 			`(max-width: ${MOBILE_BREAKPOINT - 1}px)`
 		);
 		const onChange = () => {
-			// TODO: Al posto di fare il controllo mauale, è posbbile utilizzare `mql.matches`, che applica la `MediaQuery` specificata come argomento di `window.matchMedia`. Sarebbe più coretto utilizzarlo
-			setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+			// Quando la MediaQuery cambia, aggiorna lo stato isMobile
+			// mql.matches è true se la condizione della MediaQuery è soddisfatta
+			setIsMobile(mql.matches);
 		};
 		mql.addEventListener("change", onChange);
-		setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+		setIsMobile(mql.matches);
 		return () => mql.removeEventListener("change", onChange);
 	}, []);
 
