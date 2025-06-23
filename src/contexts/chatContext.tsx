@@ -59,9 +59,23 @@ export function ChatProvider({
 		async function loadModels() {
 			try {
 				setModelsLoading(true);
+
+				const savedModelId = localStorage.getItem("selectedModelId");
+
 				const installedModels = await getInstalledModels();
 				setModels(installedModels);
-				setSelectedModel(installedModels[0] || null);
+
+				if (
+					savedModelId &&
+					installedModels.some((model) => model.id === savedModelId)
+				) {
+					const savedModel = installedModels.find(
+						(model) => model.id === savedModelId
+					);
+					setSelectedModel(savedModel!);
+				} else {
+					setSelectedModel(installedModels[0] || null);
+				}
 			} catch (err) {
 				console.error("Failed to load models:", err);
 				setError("Failed to load models. Please try again later.");

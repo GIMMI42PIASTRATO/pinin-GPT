@@ -262,6 +262,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 		//set the new model
 		setSelectedModel(model);
+		localStorage.setItem("selectedModelId", model.id);
 		// Close the popover after selection
 		setModelPopoverOpen(false);
 	};
