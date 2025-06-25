@@ -12,7 +12,7 @@ export const chatsTable = mysqlTable("chats", {
 	id: varchar("id", { length: 36 }).primaryKey(), // UUID string
 	timestamp: timestamp("timestamp").defaultNow().notNull(),
 	userId: varchar("user_id", { length: 255 }).notNull(), // Clerk user id
-	chatName: varchar("chat_name", { length: 255 }).notNull(),
+	title: varchar("title", { length: 255 }).notNull(), // Renamed from chatName
 	pinned: boolean("pinned").default(false).notNull(),
 });
 

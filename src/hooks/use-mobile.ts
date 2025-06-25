@@ -1,19 +1,26 @@
-import * as React from "react"
+import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768
+const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+	const [isMobile, setIsMobile] = React.useState<boolean | undefined>(
+		undefined
+	);
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+	React.useEffect(() => {
+		// Crea una MediaQueryList (mql), che è un oggeto, sul quale è possbile verificare se la MediaQuery specificata in matchMedia corrisponde
+		const mql = window.matchMedia(
+			`(max-width: ${MOBILE_BREAKPOINT - 1}px)`
+		);
+		const onChange = () => {
+			// Quando la MediaQuery cambia, aggiorna lo stato isMobile
+			// mql.matches è true se la condizione della MediaQuery è soddisfatta
+			setIsMobile(mql.matches);
+		};
+		mql.addEventListener("change", onChange);
+		setIsMobile(mql.matches);
+		return () => mql.removeEventListener("change", onChange);
+	}, []);
 
-  return !!isMobile
+	return !!isMobile;
 }

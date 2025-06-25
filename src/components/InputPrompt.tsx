@@ -28,6 +28,11 @@ import { cn } from "@/lib/utils";
 
 // Server actions
 import { sendQuestion } from "@/actions/chat";
+import { createNewChat, saveMessageToChat } from "@/actions/chatActions";
+import { useRouter } from "next/navigation";
+
+// Auth
+import { useUser } from "@clerk/nextjs";
 
 // Types
 import { InputPromptTypes } from "@/types/propTypes";
@@ -43,16 +48,22 @@ import { v4 as uuidv4 } from "uuid";
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
+	const { user } = useUser();
 
+	const router = useRouter();
 	const {
 		messages,
+		setMessages,
 		currentPrompt,
 		setCurrentPrompt,
-		setMessages,
-		setError,
+		isLoading,
 		setIsLoading,
+		error,
+		setError,
 		selectedModel,
 		setSelectedModel,
+		currentChatId,
+		setCurrentChatId,
 	} = useChatContext();
 
 	type FormSchema = z.infer<typeof PromptSchema>;
@@ -69,11 +80,11 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		form.setValue("prompt", currentPrompt);
 	}, [currentPrompt, form]);
 
-	const onSubmit = (formData: FormSchema) => {
-		console.log("📬 Submitting data: ", formData);
+	const onSubmit = async (data: z.infer<typeof PromptSchema>) => {
+		console.log("📬 Submitting data: ", data);
 		setError(null);
 
-		if (!formData.prompt || formData.prompt.trim() === "") {
+		if (!data.prompt || data.prompt.trim() === "") {
 			return; // Do not send empty message
 		}
 
@@ -83,15 +94,21 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 			return;
 		}
 
+		// Check if user is authenticated
+		if (!user && !process.env.NEXT_PUBLIC_ALLOW_ANONYMOUS_CHATS) {
+			setError("Please sign in to send messages");
+			return;
+		}
+
 		// Costruisci il nuovo messaggio
 		const newMessage: ChatMessage = {
 			id: uuidv4(),
-			content: formData.prompt,
+			content: data.prompt,
 			role: "user",
 			timestamp: new Date(),
 		};
 
-		// Crea l’array aggiornato dei messaggi
+		// Crea l'array aggiornato dei messaggi
 		const updatedMessages = [...messages, newMessage];
 		setMessages(updatedMessages); // aggiorna manualmente lo stato
 
@@ -99,33 +116,144 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		form.reset();
 		setIsLoading(true);
 
-		startTransition(() => {
-			sendQuestion(updatedMessages, selectedModel.id)
-				.then(async (response) => {
-					if (response.error) {
-						setError(response.error);
-					}
-					if (response.message) {
-						// Aggiungi il messaggio del modello alla fine
-						const assistantMessage: ChatMessage = {
-							id: uuidv4(),
-							content: response.message,
-							role: "assistant",
-							timestamp: new Date(),
-						};
+		try {
+			// If this is the first message and we're in the /chat route (no chatId)
+			if (!currentChatId && messages.length === 0) {
+				console.log("Creating new chat...");
 
-						setMessages((prev) => [...prev, assistantMessage]);
-					}
+				let chatId = null;
+				let title = "New Chat";
 
-					console.log("🤖 Assistant message:", response.message);
-				})
-				.catch((error) => {
-					setError(error.message || "Something went wrong");
-				})
-				.finally(() => {
-					setIsLoading(false);
+				// Only create chat in database if user is authenticated
+				if (user) {
+					const { chatId: newChatId, title: newTitle } =
+						await createNewChat(
+							newMessage,
+							selectedModel.id,
+							user.id
+						);
+					chatId = newChatId;
+					title = newTitle;
+					console.log(
+						`Chat created with ID: ${chatId} and title: ${title}`
+					);
+				} else {
+					// For anonymous users, generate a temporary ID for UI state only
+					chatId = `temp-${uuidv4()}`;
+					console.log("Anonymous chat - not saving to database");
+				}
+
+				setCurrentChatId(chatId);
+
+				startTransition(() => {
+					sendQuestion(updatedMessages, selectedModel.id)
+						.then(async (response) => {
+							if (response.error) {
+								setError(response.error);
+								return;
+							}
+
+							if (response.message) {
+								const assistantMessage: ChatMessage = {
+									id: uuidv4(),
+									content: response.message,
+									role: "assistant",
+									timestamp: new Date(),
+								};
+
+								// Only save assistant message to database if user is authenticated
+								if (
+									user &&
+									chatId &&
+									!chatId.startsWith("temp-")
+								) {
+									await saveMessageToChat(
+										assistantMessage,
+										chatId
+									);
+								}
+
+								setMessages((prev) => [
+									...prev,
+									assistantMessage,
+								]);
+
+								// Only redirect if user is authenticated and chat was saved
+								if (
+									user &&
+									chatId &&
+									!chatId.startsWith("temp-")
+								) {
+									router.push(`/chat/${chatId}`);
+								}
+							}
+						})
+						.catch((error) => {
+							console.error("Error sending message:", error);
+							setError("Failed to send message");
+						})
+						.finally(() => {
+							setIsLoading(false);
+						});
 				});
-		});
+			} else {
+				// For existing chats, only save the message if user is authenticated and chat is not temporary
+				if (
+					currentChatId &&
+					user &&
+					!currentChatId.startsWith("temp-")
+				) {
+					await saveMessageToChat(newMessage, currentChatId);
+				}
+
+				startTransition(() => {
+					sendQuestion(updatedMessages, selectedModel.id)
+						.then(async (response) => {
+							if (response.error) {
+								setError(response.error);
+								return;
+							}
+
+							if (response.message) {
+								const assistantMessage: ChatMessage = {
+									id: uuidv4(),
+									content: response.message,
+									role: "assistant",
+									timestamp: new Date(),
+								};
+
+								// Only save assistant message to database if user is authenticated and chat is not temporary
+								if (
+									currentChatId &&
+									user &&
+									!currentChatId.startsWith("temp-")
+								) {
+									await saveMessageToChat(
+										assistantMessage,
+										currentChatId
+									);
+								}
+
+								setMessages((prev) => [
+									...prev,
+									assistantMessage,
+								]);
+							}
+						})
+						.catch((error) => {
+							console.error("Error sending message:", error);
+							setError("Failed to send message");
+						})
+						.finally(() => {
+							setIsLoading(false);
+						});
+				});
+			}
+		} catch (error) {
+			console.error("Error creating chat:", error);
+			setError("Failed to create chat");
+			setIsLoading(false);
+		}
 	};
 
 	// Add a function to handle model selection and close popover
@@ -134,6 +262,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 		//set the new model
 		setSelectedModel(model);
+		localStorage.setItem("selectedModelId", model.id);
 		// Close the popover after selection
 		setModelPopoverOpen(false);
 	};
@@ -171,6 +300,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 							type="submit"
 							size="icon"
 							disabled={isPending || !selectedModel}
+							title="Invia prompt"
 						>
 							<ArrowUp />
 						</Button>
@@ -181,7 +311,10 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					>
 						<span className="pl-1">
 							<PopoverTrigger asChild>
-								<Button variant="ghost">
+								<Button
+									variant="ghost"
+									title="Seleziona modello"
+								>
 									<span>
 										{selectedModel
 											? `${selectedModel.name} ${selectedModel.version}`
