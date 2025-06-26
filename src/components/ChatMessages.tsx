@@ -11,6 +11,7 @@ import {
 	UserMessage,
 	ModelMessage,
 	ModelTyping,
+	StreamingModelMessage,
 } from "@/components/MessageComponent";
 
 export default function ChatMessages() {
@@ -22,6 +23,8 @@ export default function ChatMessages() {
 		modelsLoading,
 		optimisticModelsLoaded,
 		currentChatId,
+		isStreaming,
+		streamingText,
 	} = useChatContext();
 	const { user, isLoaded } = useUser();
 	const messageEndRef = useRef<HTMLDivElement>(null);
@@ -32,7 +35,7 @@ export default function ChatMessages() {
 
 	useEffect(() => {
 		scrollToBottom();
-	}, [messages, isLoading]);
+	}, [messages, isLoading, streamingText]); // Aggiunto streamingText per lo scroll durante lo streaming
 
 	console.log("👀 Messages array while rendering:", messages);
 	console.log("👀 Current chat ID:", currentChatId);
@@ -107,18 +110,22 @@ export default function ChatMessages() {
 					<ModelMessage
 						key={message.id}
 						modelName={`${selectedModel.name} ${selectedModel.version}`}
-						// className={
-						// 	message.id === lastModelMessageId
-						// 		? "min-h-[calc(100vh-20rem)]"
-						// 		: ""
-						// }
 					>
 						{message.content}
 					</ModelMessage>
 				)
 			)}
 
-			{isLoading && (
+			{/* Show streaming message if streaming is active */}
+			{isStreaming && streamingText && (
+				<StreamingModelMessage
+					modelName={`${selectedModel.name} ${selectedModel.version}`}
+				>
+					{streamingText}
+				</StreamingModelMessage>
+			)}
+
+			{isLoading && !isStreaming && (
 				<ModelTyping
 					modelName={`${selectedModel.name} ${selectedModel.version}`}
 				/>

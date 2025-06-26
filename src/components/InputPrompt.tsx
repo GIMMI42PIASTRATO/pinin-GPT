@@ -28,8 +28,18 @@ import { cn } from "@/lib/utils";
 
 // Server actions
 import { sendQuestion } from "@/actions/chat";
+import { sendQuestionFakeStreaming, streamText } from "@/actions/fakeStreaming";
 import { createNewChat, saveMessageToChat } from "@/actions/chatActions";
 import { useRouter } from "next/navigation";
+
+// Utils
+import {
+	simulateRealisticDelay,
+	getSmartChunkSize,
+	shouldAddPause,
+	debugLog,
+} from "@/lib/streamingUtils";
+import { FAKE_STREAMING_CONFIG } from "@/lib/fakeStreamingConfig";
 
 // Auth
 import { useUser } from "@clerk/nextjs";
@@ -64,6 +74,10 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		setSelectedModel,
 		currentChatId,
 		setCurrentChatId,
+		isStreaming,
+		setIsStreaming,
+		streamingText,
+		setStreamingText,
 	} = useChatContext();
 
 	type FormSchema = z.infer<typeof PromptSchema>;
@@ -79,6 +93,100 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		console.log("💬 Current prompt: ", currentPrompt);
 		form.setValue("prompt", currentPrompt);
 	}, [currentPrompt, form]);
+
+	// Helper function for fake streaming
+	const handleFakeStreaming = async (
+		responseText: string,
+		onComplete?: () => void
+	) => {
+		debugLog("Starting fake streaming", {
+			textLength: responseText.length,
+		});
+		setIsStreaming(true);
+		setStreamingText("");
+
+		// Rimuovo il delay aggiuntivo qui per evitare troppi delay sovrapposti
+		debugLog("Starting streaming immediately");
+
+		// Simulate streaming by gradually revealing the text
+		let currentIndex = 0;
+		let chunkCount = 0;
+
+		const processNextChunk = async () => {
+			if (currentIndex >= responseText.length) {
+				debugLog("Streaming completed", { totalChunks: chunkCount });
+
+				// Create the final assistant message
+				const assistantMessage: ChatMessage = {
+					id: uuidv4(),
+					content: responseText,
+					role: "assistant",
+					timestamp: new Date(),
+				};
+
+				// Add the complete message to the messages array
+				setMessages((prev) => [...prev, assistantMessage]);
+
+				// Save message to database if user is authenticated and chat is not temporary
+				if (
+					currentChatId &&
+					user &&
+					!currentChatId.startsWith("temp-")
+				) {
+					saveMessageToChat(assistantMessage, currentChatId);
+				}
+
+				// Reset streaming state
+				setIsStreaming(false);
+				setStreamingText("");
+				setIsLoading(false);
+
+				// Call onComplete callback if provided
+				if (onComplete) {
+					onComplete();
+				}
+
+				return;
+			}
+
+			// Get smart chunk size based on context
+			const chunkSize = getSmartChunkSize(responseText, currentIndex);
+			const nextIndex = Math.min(
+				currentIndex + chunkSize,
+				responseText.length
+			);
+			const chunk = responseText.slice(currentIndex, nextIndex);
+
+			debugLog(`Streaming chunk ${chunkCount}`, {
+				chunk: chunk.replace(/\n/g, "\\n"),
+				chunkSize,
+				currentIndex,
+				nextIndex,
+			});
+
+			// Update the streaming text
+			setStreamingText((prev) => prev + chunk);
+			currentIndex = nextIndex;
+			chunkCount++;
+
+			// Determine base delay and any additional pause
+			const baseDelay = simulateRealisticDelay();
+			const additionalPause = shouldAddPause(responseText, currentIndex);
+			const totalDelay = baseDelay + additionalPause;
+
+			debugLog(`Delays calculated`, {
+				baseDelay,
+				additionalPause,
+				totalDelay,
+			});
+
+			// Schedule next chunk
+			setTimeout(processNextChunk, totalDelay);
+		};
+
+		// Start the streaming process
+		processNextChunk();
+	};
 
 	const onSubmit = async (data: z.infer<typeof PromptSchema>) => {
 		console.log("📬 Submitting data: ", data);
@@ -129,7 +237,8 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					const { chatId: newChatId, title: newTitle } =
 						await createNewChat(
 							newMessage,
-							selectedModel.id,
+							// selectedModel.id,
+							"gemma3:1b",
 							user.id
 						);
 					chatId = newChatId;
@@ -145,56 +254,41 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 				setCurrentChatId(chatId);
 
-				startTransition(() => {
-					sendQuestion(updatedMessages, selectedModel.id)
-						.then(async (response) => {
-							if (response.error) {
-								setError(response.error);
-								return;
-							}
+				// Use fake streaming instead of real API call
+				startTransition(async () => {
+					try {
+						const response = await sendQuestionFakeStreaming(
+							updatedMessages,
+							selectedModel.id
+						);
 
-							if (response.message) {
-								const assistantMessage: ChatMessage = {
-									id: uuidv4(),
-									content: response.message,
-									role: "assistant",
-									timestamp: new Date(),
-								};
-
-								// Only save assistant message to database if user is authenticated
-								if (
-									user &&
-									chatId &&
-									!chatId.startsWith("temp-")
-								) {
-									await saveMessageToChat(
-										assistantMessage,
-										chatId
-									);
-								}
-
-								setMessages((prev) => [
-									...prev,
-									assistantMessage,
-								]);
-
-								// Only redirect if user is authenticated and chat was saved
-								if (
-									user &&
-									chatId &&
-									!chatId.startsWith("temp-")
-								) {
-									router.push(`/chat/${chatId}`);
-								}
-							}
-						})
-						.catch((error) => {
-							console.error("Error sending message:", error);
-							setError("Failed to send message");
-						})
-						.finally(() => {
+						if (response.error) {
+							setError(response.error);
 							setIsLoading(false);
-						});
+							return;
+						}
+
+						if (response.message) {
+							// Start fake streaming with conditional redirect
+							const shouldRedirect =
+								FAKE_STREAMING_CONFIG.autoRedirect &&
+								user &&
+								chatId &&
+								!chatId.startsWith("temp-");
+							await handleFakeStreaming(
+								response.message,
+								shouldRedirect
+									? () => {
+											router.push(`/chat/${chatId}`);
+									  }
+									: undefined
+							);
+						}
+					} catch (error) {
+						console.error("Error sending message:", error);
+						setError("Failed to send message");
+						setIsLoading(false);
+					}
 				});
 			} else {
 				// For existing chats, only save the message if user is authenticated and chat is not temporary
@@ -206,47 +300,29 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					await saveMessageToChat(newMessage, currentChatId);
 				}
 
-				startTransition(() => {
-					sendQuestion(updatedMessages, selectedModel.id)
-						.then(async (response) => {
-							if (response.error) {
-								setError(response.error);
-								return;
-							}
+				// Use fake streaming for existing chats too
+				startTransition(async () => {
+					try {
+						const response = await sendQuestionFakeStreaming(
+							updatedMessages,
+							selectedModel.id
+						);
 
-							if (response.message) {
-								const assistantMessage: ChatMessage = {
-									id: uuidv4(),
-									content: response.message,
-									role: "assistant",
-									timestamp: new Date(),
-								};
-
-								// Only save assistant message to database if user is authenticated and chat is not temporary
-								if (
-									currentChatId &&
-									user &&
-									!currentChatId.startsWith("temp-")
-								) {
-									await saveMessageToChat(
-										assistantMessage,
-										currentChatId
-									);
-								}
-
-								setMessages((prev) => [
-									...prev,
-									assistantMessage,
-								]);
-							}
-						})
-						.catch((error) => {
-							console.error("Error sending message:", error);
-							setError("Failed to send message");
-						})
-						.finally(() => {
+						if (response.error) {
+							setError(response.error);
 							setIsLoading(false);
-						});
+							return;
+						}
+
+						if (response.message) {
+							// Start fake streaming (for existing chats, no redirect needed)
+							await handleFakeStreaming(response.message);
+						}
+					} catch (error) {
+						console.error("Error sending message:", error);
+						setError("Failed to send message");
+						setIsLoading(false);
+					}
 				});
 			}
 		} catch (error) {

@@ -14,10 +14,6 @@ import { ChatMessage } from "@/types/chatContextTypes";
 // prompt
 import { defaultPrompt } from "@/data/prompt";
 
-// drizzle
-import { db } from "@/drizzle/db";
-import { messagesTable } from "@/drizzle/schema";
-
 // uuid
 import { v4 as uuidv4 } from "uuid";
 

@@ -45,11 +45,11 @@ export const sendQuestionStreming = async (
 	};
 
 	try {
-		const response = await ollama.chat({
-			model: modelId,
-			messages: [systemMessage, ...validMessages],
-			stream: true,
-		});
+		// const response = await ollama.chat({
+		// 	model: modelId,
+		// 	messages: [systemMessage, ...validMessages],
+		// 	stream: true,
+		// });
 	} catch (error) {
 		console.error("Error in streaming chat:", error);
 		return { error: "Failed to send question" };

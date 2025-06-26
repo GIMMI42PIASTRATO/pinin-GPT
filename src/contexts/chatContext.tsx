@@ -10,6 +10,7 @@ import {
 import { ChatMessage, ChatContextType } from "@/types/chatContextTypes";
 import type { ModelType } from "@/types/modelSelectionAreaTypes";
 import { getInstalledModels } from "@/actions/models";
+import { models as fakeModels } from "@/data/models";
 
 // Create the context with default values
 const ChatContext = createContext<ChatContextType>({
@@ -31,6 +32,10 @@ const ChatContext = createContext<ChatContextType>({
 	setModels: () => {},
 	setModelsLoading: () => {},
 	optimisticModelsLoaded: false,
+	isStreaming: false,
+	setIsStreaming: () => {},
+	streamingText: "",
+	setStreamingText: () => {},
 });
 
 // Provider component
@@ -56,6 +61,8 @@ export function ChatProvider({
 		initialChatId
 	);
 	const [optimisticModelsLoaded, setOptimisticModelsLoaded] = useState(false);
+	const [isStreaming, setIsStreaming] = useState(false);
+	const [streamingText, setStreamingText] = useState("");
 
 	//* Caricamento dei modelli SENZA caricamento ottimistico
 	// useEffect(() => {
@@ -122,7 +129,9 @@ export function ChatProvider({
 				}
 
 				// 2. Fetch reale dei modelli
-				const installedModels = await getInstalledModels();
+				let installedModels = await getInstalledModels();
+
+				installedModels = fakeModels;
 				setModels(installedModels);
 				localStorage.setItem(
 					"installedModels",
@@ -177,6 +186,10 @@ export function ChatProvider({
 				setModels,
 				setModelsLoading,
 				optimisticModelsLoaded,
+				isStreaming,
+				setIsStreaming,
+				streamingText,
+				setStreamingText,
 			}}
 		>
 			{children}

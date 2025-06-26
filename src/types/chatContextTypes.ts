@@ -25,4 +25,8 @@ export interface ChatContextType {
 	setModels: React.Dispatch<React.SetStateAction<ModelType[]>>;
 	setModelsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 	optimisticModelsLoaded: boolean;
+	isStreaming: boolean;
+	setIsStreaming: React.Dispatch<React.SetStateAction<boolean>>;
+	streamingText: string;
+	setStreamingText: React.Dispatch<React.SetStateAction<string>>;
 }
