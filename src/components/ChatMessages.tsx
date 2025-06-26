@@ -96,7 +96,11 @@ export default function ChatMessages() {
 
 			{messages.map((message) =>
 				message.role === "user" ? (
-					<UserMessage key={message.id}>
+					<UserMessage
+						key={message.id}
+						avatar={user ? user.imageUrl : undefined}
+						username={user?.username ? user.username : undefined}
+					>
 						{message.content}
 					</UserMessage>
 				) : (
