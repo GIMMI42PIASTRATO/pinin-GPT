@@ -4,6 +4,8 @@ import rehypeSanitize from "rehype-sanitize";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export function UserMessage({
 	children,
@@ -131,31 +133,58 @@ export function ModelMessage({
 									{...props}
 								/>
 							),
-							code: ({ ...props }) => (
-								// inline ? (
-								// 	<code
-								// 		className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono"
-								// 		{...props}
-								// 	/>
-								// ) : (
-								// 	<ScrollArea className="w-full relative my-4 max-h-[400px]">
-								// 		<pre className="bg-muted p-4 rounded-md overflow-x-auto text-xs">
-								// 			<code
-								// 				className="font-mono"
-								// 				{...props}
-								// 			/>
-								// 		</pre>
-								// 	</ScrollArea>
-								// ),
-								<ScrollArea className="w-full relative my-4 max-h-[400px]">
-									<pre className="bg-muted p-4 rounded-md overflow-x-auto text-xs">
+							code: ({
+								node,
+								className,
+								children,
+								...props
+							}: any) => {
+								const match = /language-(\w+)/.exec(
+									className || ""
+								);
+								const language = match ? match[1] : "";
+								const isInline = !match;
+
+								if (isInline) {
+									return (
 										<code
-											className="font-mono"
+											className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono"
 											{...props}
-										/>
-									</pre>
-								</ScrollArea>
-							),
+										>
+											{children}
+										</code>
+									);
+								}
+
+								return (
+									<div className="relative my-4">
+										{language && (
+											<div className="absolute top-2 right-2 text-xs text-muted-foreground bg-muted/80 px-2 py-1 rounded z-10">
+												{language.toUpperCase()}
+											</div>
+										)}
+										<SyntaxHighlighter
+											style={oneLight}
+											language={language || "text"}
+											PreTag="div"
+											className="rounded-md text-sm"
+											showLineNumbers={true}
+											wrapLines={true}
+											customStyle={{
+												margin: 0,
+												borderRadius: "6px",
+												fontSize: "14px",
+												lineHeight: "1.5",
+											}}
+										>
+											{String(children).replace(
+												/\n$/,
+												""
+											)}
+										</SyntaxHighlighter>
+									</div>
+								);
+							},
 							table: ({ ...props }) => (
 								<div className="overflow-x-auto my-4">
 									<table
