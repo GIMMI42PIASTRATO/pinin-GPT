@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "PININ Chat - L'AI chatbot dell'ITIS Pininfarina",
+	title: "PininGPT - L'AI chatbot dell'ITIS Pininfarina",
 	description:
 		"Usa i modelli più famosi - Completamente privato - DeepSeek-r1, Gemma3, llama3.3",
 };

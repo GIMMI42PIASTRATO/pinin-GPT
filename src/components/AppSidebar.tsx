@@ -19,6 +19,7 @@ import {
 	MessageSquare,
 	Pin,
 	Loader2,
+	ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UserButtonComponent from "@/components/UserButtonComponent";
@@ -135,31 +136,67 @@ export default function AppSidebar() {
 
 	return (
 		<Sidebar className="z-[60]">
-			<SidebarHeader className="flex justify-between items-center px-4 py-2">
-				<h1 className="flex h-8 shrink-0 items-center justify-center text-lg font-bold transition-opacity delay-75 duration-75">
-					Pinin CHAT
-				</h1>
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								size="sm"
-								variant="ghost"
-								onClick={() => router.push("/chat")}
-								title="New Chat"
-							>
-								<MessageSquarePlus className="h-5 w-5" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>
-							<p>New Chat</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+			<SidebarHeader className="flex flex-col gap-4 px-6 py-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+				<div className="flex justify-between items-center">
+					<h1 className="text-2xl font-bold text-gray-800 tracking-tight">
+						PininGPT
+					</h1>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									size="sm"
+									variant="ghost"
+									onClick={() => router.push("/chat")}
+									title="New Chat"
+									className="h-9 w-9 hover:bg-gray-100 transition-colors duration-200"
+								>
+									<MessageSquarePlus className="h-5 w-5" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>New Chat</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				</div>
+
+				{/* PininGPT Studio Button */}
+				<div className="w-full">
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									asChild
+									className="w-full bg-gray-900 hover:bg-gray-800 text-white border-0 h-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
+								>
+									<Link
+										href="#"
+										className="flex items-center justify-center gap-2 font-medium"
+									>
+										<div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+										<div className="relative z-10 flex items-center gap-2">
+											<span className="font-bold text-lg">
+												PininGPT
+											</span>
+											<span className="font-serif italic text-sm opacity-90">
+												STUDIO
+											</span>
+											<ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity duration-200" />
+										</div>
+									</Link>
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>Open PininGPT Studio</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				</div>
 			</SidebarHeader>
-			<SidebarContent>
+			<SidebarContent className="px-4">
 				{isLoading ? (
-					<div className="flex justify-center py-4">
+					<div className="flex justify-center py-8">
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 					</div>
 				) : error && user ? (
@@ -207,11 +244,11 @@ export default function AppSidebar() {
 										{pinnedChats.map((chat) => (
 											<SidebarMenuItem key={chat.id}>
 												<SidebarMenuButton asChild>
-													<div className="flex w-full relative">
+													<div className="flex w-full relative group">
 														<Link
 															href={`/chat/${chat.id}`}
 															className={cn(
-																"flex items-center gap-2 flex-1",
+																"flex items-center gap-2 flex-1 pr-10 truncate",
 																pathname ===
 																	`/chat/${chat.id}` &&
 																	"bg-accent text-accent-foreground"
@@ -274,11 +311,11 @@ export default function AppSidebar() {
 										recentChats.map((chat) => (
 											<SidebarMenuItem key={chat.id}>
 												<SidebarMenuButton asChild>
-													<div className="flex w-full relative">
+													<div className="flex w-full relative group">
 														<Link
 															href={`/chat/${chat.id}`}
 															className={cn(
-																"flex items-center gap-2 flex-1",
+																"flex items-center gap-2 flex-1 pr-10 truncate",
 																pathname ===
 																	`/chat/${chat.id}` &&
 																	"bg-accent text-accent-foreground"
@@ -341,7 +378,7 @@ export default function AppSidebar() {
 					</>
 				)}
 			</SidebarContent>
-			<SidebarFooter>
+			<SidebarFooter className="p-4 border-t border-gray-200 bg-gray-50/50">
 				<SignedIn>
 					<UserButtonComponent />
 				</SignedIn>
@@ -349,7 +386,7 @@ export default function AppSidebar() {
 					<Button
 						asChild
 						variant="ghost"
-						className="flex-1 justify-start p-4 hover:bg-gray-200"
+						className="flex-1 justify-start p-4 hover:bg-white hover:shadow-sm transition-all duration-200 rounded-lg"
 					>
 						<Link
 							href="/sign-in"
