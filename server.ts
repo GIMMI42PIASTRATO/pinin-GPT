@@ -1,9 +1,12 @@
 // Custom server import
-import { createServer } from "http";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { parse } from "url";
 import next from "next";
 
-// Event sender funtion import
+// Custom request/response classes
+import { AppRequest, AppResponse } from "@/lib/server/customRequestResponse";
+
+// Event sender function import
 import { handleChatRequest } from "@/events/chatEvents";
 
 const port = parseInt(process.env.PORT || "3000", 10);
@@ -16,21 +19,27 @@ app.prepare().then(() => {
 		const parsedUrl = parse(req.url!, true);
 
 		if (parsedUrl.pathname === "/api/stream") {
-			res.writeHead(200, {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-				"Access-Control-Allow-Origin": "*",
+			// Cast to custom classes to add body parsing and SSE helpers
+			const appReq = Object.setPrototypeOf(
+				req,
+				AppRequest.prototype
+			) as AppRequest;
+			const appRes = Object.setPrototypeOf(
+				res,
+				AppResponse.prototype
+			) as AppResponse;
+
+			// Handle the chat request with streaming
+			handleChatRequest(appReq, appRes).catch((error) => {
+				console.error("Error handling chat request:", error);
+				if (!appRes.headersSent) {
+					appRes.error("Internal server error", 500);
+				}
 			});
 
-			const intervalId = setInterval(() => {
-				handleChatRequest(req, res);
-			}, 1000);
-
-			req.on("close", () => {
-				clearInterval(intervalId);
-			});
+			return;
 		}
+
 		handle(req, res, parsedUrl);
 	}).listen(port);
 
