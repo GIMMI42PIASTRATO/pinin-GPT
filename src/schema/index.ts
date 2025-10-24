@@ -11,4 +11,12 @@ export const ChatMessageSchema = z.object({
 	timestamp: z.coerce.date(),
 });
 
+export const ChatSchema = z.object({
+	id: z.string().max(36),
+	timestamp: z.date(),
+	userId: z.string(),
+	title: z.string(),
+	pinned: z.boolean(),
+});
+
 export const ChatMessagesSchema = z.array(ChatMessageSchema);

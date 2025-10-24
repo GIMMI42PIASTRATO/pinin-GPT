@@ -3,7 +3,7 @@
 import { db } from "@/drizzle/db";
 import { chatsTable, messagesTable } from "@/drizzle/schema";
 import { eq, desc } from "drizzle-orm";
-import { ChatMessage } from "@/types/chatContextTypes";
+import { type ChatMessage, type Chat } from "@/types/chatContextTypes";
 import { v4 as uuidv4 } from "uuid";
 import ollama from "ollama";
 
@@ -119,7 +119,9 @@ export async function getChatById(chatId: string) {
 /**
  * Gets all chats for a user
  */
-export async function getUserChats(userId: string) {
+export async function getUserChats(
+	userId: string
+): Promise<{ chats: Chat[]; error: string | null }> {
 	try {
 		const chats = await db
 			.select()

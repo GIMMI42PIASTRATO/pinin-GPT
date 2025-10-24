@@ -1,9 +1,12 @@
-import { ChatMessageSchema } from "@/schema";
+import { ChatMessageSchema, ChatSchema } from "@/schema";
 import * as z from "zod";
 import { ModelType } from "./modelSelectionAreaTypes";
 
 // Define the message structure
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+// Define the chat strucutre
+export type Chat = z.infer<typeof ChatSchema>;
 
 // Define the context shape
 export interface ChatContextType {

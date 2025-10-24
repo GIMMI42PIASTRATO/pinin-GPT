@@ -36,13 +36,14 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { UserChat } from "@/types/chatTypes";
+import { Chat } from "@/types/chatContextTypes";
 
 export default function AppSidebar() {
 	const { user, isLoaded } = useUser();
-	const [chats, setChats] = useState<any[]>([]);
+	const [chats, setChats] = useState<Chat[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
-	const [pinnedChats, setPinnedChats] = useState<any[]>([]);
-	const [recentChats, setRecentChats] = useState<any[]>([]);
+	const [pinnedChats, setPinnedChats] = useState<Chat[]>([]);
+	const [recentChats, setRecentChats] = useState<Chat[]>([]);
 	const [updatingPinId, setUpdatingPinId] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const pathname = usePathname();

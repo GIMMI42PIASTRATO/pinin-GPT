@@ -4,10 +4,22 @@ import { db } from "@/drizzle/db";
 import { chatsTable } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
+type ToggleChatPinnedResult =
+	| {
+			success: true;
+			pinned: boolean;
+	  }
+	| {
+			success: false;
+			error: string;
+	  };
+
 /**
  * Toggles the pinned status of a chat
  */
-export async function toggleChatPinned(chatId: string) {
+export async function toggleChatPinned(
+	chatId: string
+): Promise<ToggleChatPinnedResult> {
 	try {
 		// First, get the current pinned status
 		const chat = await db
