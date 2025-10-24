@@ -48,36 +48,51 @@ export default function AppSidebar() {
 	const pathname = usePathname();
 	const router = useRouter();
 
-	useEffect(() => {
-		async function loadChats() {
-			// Only load chats if user is authenticated
-			if (user && isLoaded) {
-				setIsLoading(true);
-				const { chats: userChats, error } = await getUserChats(user.id);
-				setIsLoading(false);
+	// Function to load chats
+	const loadChats = async () => {
+		// Only load chats if user is authenticated
+		if (user && isLoaded) {
+			setIsLoading(true);
+			const { chats: userChats, error } = await getUserChats(user.id);
+			setIsLoading(false);
 
-				if (error) {
-					console.error("Error loading chats:", error);
-					setError("Failed to load chats. Please try again later.");
-					return;
-				}
-
-				setChats(userChats);
-				// Separate pinned and recent chats
-				const { pinned, recent } = pinnedAndRecentChats(userChats);
-
-				setPinnedChats(pinned);
-				setRecentChats(recent);
-			} else if (isLoaded && !user) {
-				// Clear chats if user is not authenticated
-				setChats([]);
-				setPinnedChats([]);
-				setRecentChats([]);
-				setIsLoading(false);
+			if (error) {
+				console.error("Error loading chats:", error);
+				setError("Failed to load chats. Please try again later.");
+				return;
 			}
-		}
 
+			setChats(userChats);
+			// Separate pinned and recent chats
+			const { pinned, recent } = pinnedAndRecentChats(userChats);
+
+			setPinnedChats(pinned);
+			setRecentChats(recent);
+		} else if (isLoaded && !user) {
+			// Clear chats if user is not authenticated
+			setChats([]);
+			setPinnedChats([]);
+			setRecentChats([]);
+			setIsLoading(false);
+		}
+	};
+
+	useEffect(() => {
 		loadChats();
+	}, [user, isLoaded]);
+
+	// Listen for chat creation events
+	useEffect(() => {
+		const handleChatCreated = () => {
+			console.log("Chat created event received, refreshing sidebar...");
+			loadChats();
+		};
+
+		window.addEventListener("chatCreated", handleChatCreated);
+
+		return () => {
+			window.removeEventListener("chatCreated", handleChatCreated);
+		};
 	}, [user, isLoaded]);
 
 	const pinnedAndRecentChats = (userChats: UserChat[]) => {
@@ -207,25 +222,7 @@ export default function AppSidebar() {
 							<Button
 								onClick={() => {
 									setError(null);
-									setIsLoading(true);
-									getUserChats(user.id)
-										.then(({ chats: userChats, error }) => {
-											if (error) {
-												throw new Error(error);
-											}
-											setChats(userChats);
-											const { pinned, recent } =
-												pinnedAndRecentChats(userChats);
-											setPinnedChats(pinned);
-											setRecentChats(recent);
-										})
-										.catch((err) => {
-											console.error(err);
-											setError(
-												"Failed to load chats. Please try again later."
-											);
-										})
-										.finally(() => setIsLoading(false));
+									loadChats();
 								}}
 								variant="destructive"
 								className="w-min"

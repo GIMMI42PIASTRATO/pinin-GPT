@@ -150,6 +150,9 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					console.log(
 						`Chat created with ID: ${chatId} and title: ${title}`
 					);
+
+					// Dispatch custom event to notify sidebar of new chat
+					window.dispatchEvent(new CustomEvent("chatCreated"));
 				} else {
 					// For anonymous users, generate a temporary ID for UI state only
 					chatId = `temp-${uuidv4()}`;
