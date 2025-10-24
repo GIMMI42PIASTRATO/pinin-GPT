@@ -7,6 +7,15 @@ import { useEffect, useTransition, useState } from "react";
 // Context
 import { useChatContext } from "@/contexts/chatContext";
 
+// SSE Client
+import {
+	SSEChatClient,
+	SSEMessageStart,
+	SSEMessageChunk,
+	SSEMessageComplete,
+	SSEError,
+} from "@/lib/client/sseClient";
+
 // zod
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +36,6 @@ import {
 import { cn } from "@/lib/utils";
 
 // Server actions
-import { sendQuestion } from "@/actions/chat";
 import { createNewChat, saveMessageToChat } from "@/actions/chatActions";
 import { useRouter } from "next/navigation";
 
@@ -48,6 +56,7 @@ import { v4 as uuidv4 } from "uuid";
 export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 	const [isPending, startTransition] = useTransition();
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
+	const [isStreaming, setIsStreaming] = useState<boolean>(false);
 	const { user } = useUser();
 
 	const router = useRouter();
@@ -64,6 +73,8 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		setSelectedModel,
 		currentChatId,
 		setCurrentChatId,
+		streamingContent,
+		setStreamingContent,
 	} = useChatContext();
 
 	type FormSchema = z.infer<typeof PromptSchema>;
@@ -115,6 +126,8 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		setCurrentPrompt("");
 		form.reset();
 		setIsLoading(true);
+		setIsStreaming(true);
+		setStreamingContent("");
 
 		try {
 			// If this is the first message and we're in the /chat route (no chatId)
@@ -145,57 +158,62 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 
 				setCurrentChatId(chatId);
 
-				startTransition(() => {
-					sendQuestion(updatedMessages, selectedModel.id)
-						.then(async (response) => {
-							if (response.error) {
-								setError(response.error);
-								return;
-							}
+				// Use SSE client for streaming
+				const client = new SSEChatClient();
+				const assistantMessageId = uuidv4();
 
-							if (response.message) {
-								const assistantMessage: ChatMessage = {
-									id: uuidv4(),
-									content: response.message,
-									role: "assistant",
-									timestamp: new Date(),
-								};
-
-								// Only save assistant message to database if user is authenticated
-								if (
-									user &&
-									chatId &&
-									!chatId.startsWith("temp-")
-								) {
-									await saveMessageToChat(
-										assistantMessage,
-										chatId
-									);
-								}
-
-								setMessages((prev) => [
-									...prev,
-									assistantMessage,
-								]);
-
-								// Only redirect if user is authenticated and chat was saved
-								if (
-									user &&
-									chatId &&
-									!chatId.startsWith("temp-")
-								) {
-									router.push(`/chat/${chatId}`);
-								}
-							}
-						})
-						.catch((error) => {
-							console.error("Error sending message:", error);
-							setError("Failed to send message");
-						})
-						.finally(() => {
+				client.sendMessage(
+					{
+						messages: updatedMessages,
+						model: selectedModel.id,
+						chatId: chatId || undefined,
+					},
+					{
+						onStart: (data: SSEMessageStart) => {
+							console.log(
+								`Streaming started with message: ${data.messageId}`
+							);
+						},
+						onChunk: (chunk: SSEMessageChunk) => {
+							setStreamingContent((prev) => prev + chunk.content);
+						},
+						onComplete: async (message: SSEMessageComplete) => {
+							setIsStreaming(false);
 							setIsLoading(false);
-						});
-				});
+							console.log("Full message received!");
+
+							const assistantMessage: ChatMessage = {
+								id: assistantMessageId,
+								content: message.fullContent,
+								role: "assistant",
+								timestamp: new Date(),
+							};
+
+							// Only save assistant message to database if user is authenticated
+							if (user && chatId && !chatId.startsWith("temp-")) {
+								await saveMessageToChat(
+									assistantMessage,
+									chatId
+								);
+							}
+
+							setMessages((prev) => [...prev, assistantMessage]);
+							setStreamingContent("");
+
+							// Only redirect if user is authenticated and chat was saved
+							if (user && chatId && !chatId.startsWith("temp-")) {
+								router.push(`/chat/${chatId}`);
+							}
+						},
+						onError: (error: SSEError) => {
+							setIsStreaming(false);
+							setIsLoading(false);
+							console.error("Streaming error:", error);
+							setError(error.message || "Failed to send message");
+							setStreamingContent("");
+						},
+					}
+				);
 			} else {
 				// For existing chats, only save the message if user is authenticated and chat is not temporary
 				if (
@@ -206,53 +224,68 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					await saveMessageToChat(newMessage, currentChatId);
 				}
 
-				startTransition(() => {
-					sendQuestion(updatedMessages, selectedModel.id)
-						.then(async (response) => {
-							if (response.error) {
-								setError(response.error);
-								return;
-							}
+				// Use SSE client for streaming
+				const client = new SSEChatClient();
+				const assistantMessageId = uuidv4();
 
-							if (response.message) {
-								const assistantMessage: ChatMessage = {
-									id: uuidv4(),
-									content: response.message,
-									role: "assistant",
-									timestamp: new Date(),
-								};
-
-								// Only save assistant message to database if user is authenticated and chat is not temporary
-								if (
-									currentChatId &&
-									user &&
-									!currentChatId.startsWith("temp-")
-								) {
-									await saveMessageToChat(
-										assistantMessage,
-										currentChatId
-									);
-								}
-
-								setMessages((prev) => [
-									...prev,
-									assistantMessage,
-								]);
-							}
-						})
-						.catch((error) => {
-							console.error("Error sending message:", error);
-							setError("Failed to send message");
-						})
-						.finally(() => {
+				client.sendMessage(
+					{
+						messages: updatedMessages,
+						model: selectedModel.id,
+						chatId: currentChatId || undefined,
+					},
+					{
+						onStart: (data: SSEMessageStart) => {
+							console.log(
+								`Streaming started with message: ${data.messageId}`
+							);
+						},
+						onChunk: (chunk: SSEMessageChunk) => {
+							setStreamingContent((prev) => prev + chunk.content);
+						},
+						onComplete: async (message: SSEMessageComplete) => {
+							setIsStreaming(false);
 							setIsLoading(false);
-						});
-				});
+							console.log("Full message received!");
+
+							const assistantMessage: ChatMessage = {
+								id: assistantMessageId,
+								content: message.fullContent,
+								role: "assistant",
+								timestamp: new Date(),
+							};
+
+							// Only save assistant message to database if user is authenticated and chat is not temporary
+							if (
+								currentChatId &&
+								user &&
+								!currentChatId.startsWith("temp-")
+							) {
+								await saveMessageToChat(
+									assistantMessage,
+									currentChatId
+								);
+							}
+
+							setMessages((prev) => [...prev, assistantMessage]);
+							setStreamingContent("");
+						},
+						onError: (error: SSEError) => {
+							setIsStreaming(false);
+							setIsLoading(false);
+							console.error("Streaming error:", error);
+							setError(error.message || "Failed to send message");
+							setStreamingContent("");
+						},
+					}
+				);
 			}
 		} catch (error) {
 			console.error("Error creating chat:", error);
 			setError("Failed to create chat");
 			setIsLoading(false);
+			setIsStreaming(false);
+			setStreamingContent("");
 		}
 	};
 
@@ -299,7 +332,9 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 						<Button
 							type="submit"
 							size="icon"
-							disabled={isPending || !selectedModel}
+							disabled={
+								isPending || !selectedModel || isStreaming
+							}
 							title="Invia prompt"
 						>
 							<ArrowUp />

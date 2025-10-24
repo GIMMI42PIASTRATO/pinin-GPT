@@ -22,6 +22,7 @@ export default function ChatMessages() {
 		modelsLoading,
 		optimisticModelsLoaded,
 		currentChatId,
+		streamingContent,
 	} = useChatContext();
 	const { user, isLoaded } = useUser();
 	const messageEndRef = useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export default function ChatMessages() {
 
 	useEffect(() => {
 		scrollToBottom();
-	}, [messages, isLoading]);
+	}, [messages, isLoading, streamingContent]);
 
 	console.log("👀 Messages array while rendering:", messages);
 	console.log("👀 Current chat ID:", currentChatId);
@@ -118,7 +119,15 @@ export default function ChatMessages() {
 				)
 			)}
 
-			{isLoading && (
+			{streamingContent && (
+				<ModelMessage
+					modelName={`${selectedModel.name} ${selectedModel.version}`}
+				>
+					{streamingContent}
+				</ModelMessage>
+			)}
+
+			{isLoading && !streamingContent && (
 				<ModelTyping
 					modelName={`${selectedModel.name} ${selectedModel.version}`}
 				/>
