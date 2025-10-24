@@ -19,6 +19,8 @@ const ChatContext = createContext<ChatContextType>({
 	error: null,
 	selectedModel: null,
 	currentChatId: null,
+	streamingContent: "",
+	setStreamingContent: () => {},
 	setCurrentChatId: () => {},
 	setSelectedModel: () => {},
 	setCurrentPrompt: () => {},
@@ -56,6 +58,7 @@ export function ChatProvider({
 		initialChatId
 	);
 	const [optimisticModelsLoaded, setOptimisticModelsLoaded] = useState(false);
+	const [streamingContent, setStreamingContent] = useState<string>("");
 
 	//* Caricamento dei modelli SENZA caricamento ottimistico
 	// useEffect(() => {
@@ -164,6 +167,8 @@ export function ChatProvider({
 				isLoading,
 				error,
 				currentChatId,
+				streamingContent,
+				setStreamingContent,
 				setCurrentChatId,
 				setCurrentPrompt,
 				setMessages,

@@ -13,6 +13,8 @@ export interface ChatContextType {
 	error: string | null;
 	selectedModel: ModelType | null;
 	currentChatId: string | null;
+	streamingContent: string;
+	setStreamingContent: React.Dispatch<React.SetStateAction<string>>;
 	setCurrentChatId: React.Dispatch<React.SetStateAction<string | null>>;
 	setSelectedModel: React.Dispatch<React.SetStateAction<ModelType | null>>;
 	setCurrentPrompt: React.Dispatch<React.SetStateAction<string>>;

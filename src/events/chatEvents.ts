@@ -89,33 +89,33 @@ export const handleChatRequest = async (req: AppRequest, res: AppResponse) => {
 		}
 
 		// Save the message to database if chatId is provided
-		if (chatId) {
-			try {
-				// Save user's last message
-				const lastUserMessage = messages[messages.length - 1];
-				if (lastUserMessage) {
-					await db.insert(messagesTable).values({
-						id: lastUserMessage.id,
-						chatId: chatId,
-						content: lastUserMessage.content,
-						role: lastUserMessage.role,
-						timestamp: lastUserMessage.timestamp,
-					});
-				}
+		// if (chatId) {
+		// 	try {
+		// 		// Save user's last message
+		// 		const lastUserMessage = messages[messages.length - 1];
+		// 		if (lastUserMessage) {
+		// 			await db.insert(messagesTable).values({
+		// 				id: lastUserMessage.id,
+		// 				chatId: chatId,
+		// 				content: lastUserMessage.content,
+		// 				role: lastUserMessage.role,
+		// 				timestamp: lastUserMessage.timestamp,
+		// 			});
+		// 		}
 
-				// Save assistant's response
-				await db.insert(messagesTable).values({
-					id: messageId,
-					chatId: chatId,
-					content: fullResponse,
-					role: "assistant",
-					timestamp: new Date(),
-				});
-			} catch (dbError) {
-				console.error("Database error:", dbError);
-				// Continue even if database save fails
-			}
-		}
+		// 		// Save assistant's response
+		// 		await db.insert(messagesTable).values({
+		// 			id: messageId,
+		// 			chatId: chatId,
+		// 			content: fullResponse,
+		// 			role: "assistant",
+		// 			timestamp: new Date(),
+		// 		});
+		// 	} catch (dbError) {
+		// 		console.error("Database error:", dbError);
+		// 		// Continue even if database save fails
+		// 	}
+		// }
 
 		// Send completion event
 		res.sendSSE("message-complete", {
