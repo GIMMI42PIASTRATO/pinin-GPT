@@ -97,8 +97,23 @@ export default function AppSidebar() {
 	}, [user, isLoaded]);
 
 	const pinnedAndRecentChats = (userChats: UserChat[]) => {
-		const pinned = userChats.filter((chat) => chat.pinned);
-		const recent = userChats.filter((chat) => !chat.pinned);
+		// Separate pinned and recent chats, both sorted by timestamp (most recent first)
+		const pinned = userChats
+			.filter((chat) => chat.pinned)
+			.sort(
+				(a, b) =>
+					new Date(b.timestamp).getTime() -
+					new Date(a.timestamp).getTime()
+			);
+
+		const recent = userChats
+			.filter((chat) => !chat.pinned)
+			.sort(
+				(a, b) =>
+					new Date(b.timestamp).getTime() -
+					new Date(a.timestamp).getTime()
+			);
+
 		return { pinned, recent };
 	};
 
@@ -112,31 +127,59 @@ export default function AppSidebar() {
 			const result = await toggleChatPinned(chatId);
 
 			if (result.success) {
-				// Update the local state without requiring a full refetch
+				const newTimestamp = result.newTimestamp;
+
+				// Update the local state with new pinned status AND updated timestamp
 				setChats((prevChats) =>
 					prevChats.map((chat) =>
 						chat.id === chatId
-							? { ...chat, pinned: result.pinned }
+							? {
+									...chat,
+									pinned: result.pinned,
+									timestamp: newTimestamp,
+							  }
 							: chat
 					)
 				);
 
-				// Update pinned and recent lists
+				// Update pinned and recent lists maintaining timestamp order
 				const updatedChat = chats.find((c) => c.id === chatId);
 				if (updatedChat) {
+					const chatWithUpdatedPin = {
+						...updatedChat,
+						pinned: result.pinned,
+						timestamp: newTimestamp, // Update timestamp in local state
+					};
+
 					if (result.pinned) {
-						setPinnedChats((prev) => [
-							...prev,
-							{ ...updatedChat, pinned: true },
-						]);
+						// Add to pinned and sort by timestamp
+						const newPinnedChats = [
+							...pinnedChats,
+							chatWithUpdatedPin,
+						].sort(
+							(a, b) =>
+								new Date(b.timestamp).getTime() -
+								new Date(a.timestamp).getTime()
+						);
+						setPinnedChats(newPinnedChats);
+
+						// Remove from recent
 						setRecentChats((prev) =>
 							prev.filter((c) => c.id !== chatId)
 						);
 					} else {
-						setRecentChats((prev) => [
-							...prev,
-							{ ...updatedChat, pinned: false },
-						]);
+						// Add to recent and sort by timestamp
+						const newRecentChats = [
+							...recentChats,
+							chatWithUpdatedPin,
+						].sort(
+							(a, b) =>
+								new Date(b.timestamp).getTime() -
+								new Date(a.timestamp).getTime()
+						);
+						setRecentChats(newRecentChats);
+
+						// Remove from pinned
 						setPinnedChats((prev) =>
 							prev.filter((c) => c.id !== chatId)
 						);

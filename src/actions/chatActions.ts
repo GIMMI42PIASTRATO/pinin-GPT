@@ -135,3 +135,18 @@ export async function getUserChats(
 		return { chats: [], error: "Failed to load chats" };
 	}
 }
+
+/**
+ * Update the timestamp of a chat when new messages are sent
+ */
+export async function updateChatTimestamp(chatId: string) {
+	try {
+		await db
+			.update(chatsTable)
+			.set({ timestamp: new Date() })
+			.where(eq(chatsTable.id, chatId));
+	} catch (error) {
+		console.error("Error updating chat timestamp:", error);
+		throw new Error("Failed to update chat timestamp");
+	}
+}

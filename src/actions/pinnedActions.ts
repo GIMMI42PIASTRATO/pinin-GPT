@@ -8,6 +8,7 @@ type ToggleChatPinnedResult =
 	| {
 			success: true;
 			pinned: boolean;
+			newTimestamp: Date;
 	  }
 	| {
 			success: false;
@@ -35,14 +36,20 @@ export async function toggleChatPinned(
 		const currentPinnedStatus = chat[0].pinned;
 
 		// Update the pinned status to the opposite of its current value
+		// Also update timestamp so the chat appears at the top of its respective list
+		const newTimestamp = new Date();
 		await db
 			.update(chatsTable)
-			.set({ pinned: !currentPinnedStatus })
+			.set({
+				pinned: !currentPinnedStatus,
+				timestamp: newTimestamp,
+			})
 			.where(eq(chatsTable.id, chatId));
 
 		return {
 			success: true,
 			pinned: !currentPinnedStatus,
+			newTimestamp,
 		};
 	} catch (error) {
 		console.error("Error toggling chat pinned status:", error);

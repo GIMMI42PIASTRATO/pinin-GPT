@@ -36,7 +36,11 @@ import {
 import { cn } from "@/lib/utils";
 
 // Server actions
-import { createNewChat, saveMessageToChat } from "@/actions/chatActions";
+import {
+	createNewChat,
+	saveMessageToChat,
+	updateChatTimestamp,
+} from "@/actions/chatActions";
 import { useRouter } from "next/navigation";
 
 // Auth
@@ -198,6 +202,13 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 									assistantMessage,
 									chatId
 								);
+								// Update chat timestamp to reflect recent activity
+								await updateChatTimestamp(chatId);
+
+								// Dispatch custom event to refresh sidebar with updated timestamp
+								window.dispatchEvent(
+									new CustomEvent("chatCreated")
+								);
 							}
 
 							setMessages((prev) => [...prev, assistantMessage]);
@@ -225,6 +236,8 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					!currentChatId.startsWith("temp-")
 				) {
 					await saveMessageToChat(newMessage, currentChatId);
+					// Update chat timestamp to reflect recent activity
+					await updateChatTimestamp(currentChatId);
 				}
 
 				// Use SSE client for streaming
@@ -267,6 +280,13 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 								await saveMessageToChat(
 									assistantMessage,
 									currentChatId
+								);
+								// Update chat timestamp to reflect recent activity
+								await updateChatTimestamp(currentChatId);
+
+								// Dispatch custom event to refresh sidebar with updated timestamp
+								window.dispatchEvent(
+									new CustomEvent("chatCreated")
 								);
 							}
 
