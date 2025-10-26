@@ -1,13 +1,16 @@
 // Custom server import
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 
 // Custom request/response classes
-import { AppRequest, AppResponse } from "@/lib/server/customRequestResponse";
+import {
+	AppRequest,
+	AppResponse,
+} from "./src/lib/server/customRequestResponse";
 
 // Event sender function import
-import { handleChatRequest } from "@/events/chatEvents";
+import { handleChatRequest } from "./src/events/chatEvents";
 
 const port = parseInt(process.env.PORT || "3000", 10);
 const dev = process.env.NODE_ENV !== "production";

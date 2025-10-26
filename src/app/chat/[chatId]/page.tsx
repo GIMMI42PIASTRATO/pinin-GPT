@@ -6,13 +6,13 @@ import { getChatById, getChatMessages } from "@/actions/chatActions";
 import { notFound } from "next/navigation";
 
 interface ChatPageProps {
-	params: {
+	params: Promise<{
 		chatId: string;
-	};
+	}>;
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-	const { chatId } = params;
+	const { chatId } = await params;
 
 	// Fetch chat details and messages
 	const chat = await getChatById(chatId);

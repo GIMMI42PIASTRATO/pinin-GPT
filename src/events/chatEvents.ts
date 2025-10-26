@@ -1,20 +1,15 @@
 // Custom request/response classes
-import { AppRequest, AppResponse } from "@/lib/server/customRequestResponse";
+import { AppRequest, AppResponse } from "../lib/server/customRequestResponse";
 
 // zod
-import { ChatMessagesSchema } from "@/schema";
+import { ChatMessagesSchema } from "../schema";
 import * as z from "zod";
 
 // ollama
 import ollama from "ollama";
-import { ChatMessage } from "@/types/chatContextTypes";
 
 // prompt
-import { defaultPrompt } from "@/data/prompt";
-
-// drizzle
-import { db } from "@/drizzle/db";
-import { messagesTable } from "@/drizzle/schema";
+import { defaultPrompt } from "../data/prompt";
 
 // uuid
 import { v4 as uuidv4 } from "uuid";
@@ -87,35 +82,6 @@ export const handleChatRequest = async (req: AppRequest, res: AppResponse) => {
 				done: chunk.done,
 			});
 		}
-
-		// Save the message to database if chatId is provided
-		// if (chatId) {
-		// 	try {
-		// 		// Save user's last message
-		// 		const lastUserMessage = messages[messages.length - 1];
-		// 		if (lastUserMessage) {
-		// 			await db.insert(messagesTable).values({
-		// 				id: lastUserMessage.id,
-		// 				chatId: chatId,
-		// 				content: lastUserMessage.content,
-		// 				role: lastUserMessage.role,
-		// 				timestamp: lastUserMessage.timestamp,
-		// 			});
-		// 		}
-
-		// 		// Save assistant's response
-		// 		await db.insert(messagesTable).values({
-		// 			id: messageId,
-		// 			chatId: chatId,
-		// 			content: fullResponse,
-		// 			role: "assistant",
-		// 			timestamp: new Date(),
-		// 		});
-		// 	} catch (dbError) {
-		// 		console.error("Database error:", dbError);
-		// 		// Continue even if database save fails
-		// 	}
-		// }
 
 		// Send completion event
 		res.sendSSE("message-complete", {
