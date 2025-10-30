@@ -27,13 +27,15 @@ export default function ChatMessages() {
 	const { user, isLoaded } = useUser();
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
-	const scrollToBottom = () => {
-		messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	};
-
+	// Scrolla in fondo solo quando l’utente invia un nuovo messaggio
 	useEffect(() => {
-		scrollToBottom();
-	}, [messages, isLoading, streamingContent]);
+		if (messages.length === 0) return;
+
+		const lastMessage = messages[messages.length - 1];
+		if (lastMessage.role === "user") {
+			messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [messages]);
 
 	console.log("👀 Messages array while rendering:", messages);
 	console.log("👀 Current chat ID:", currentChatId);
@@ -41,15 +43,6 @@ export default function ChatMessages() {
 	if (messages.length === 0) {
 		return <NewConversationTemplate />;
 	}
-
-	// Find the id of the last message of the model
-	// const modelMessages = messages.filter(
-	// 	(message) => message.role !== "user" && message.role !== "system"
-	// );
-	// const lastModelMessageId =
-	// 	modelMessages.length > 0
-	// 		? modelMessages[modelMessages.length - 1].id
-	// 		: null;
 
 	if (modelsLoading && !optimisticModelsLoaded) {
 		return (
@@ -81,7 +74,7 @@ export default function ChatMessages() {
 
 	return (
 		<>
-			{/* Show warning for anonymous users */}
+			{/* Avviso per utenti anonimi */}
 			{!user && messages.length > 0 && (
 				<div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
 					<p className="text-yellow-800 text-sm">
@@ -95,6 +88,7 @@ export default function ChatMessages() {
 				</div>
 			)}
 
+			{/* Messaggi */}
 			{messages.map((message) =>
 				message.role === "user" ? (
 					<UserMessage
@@ -108,17 +102,13 @@ export default function ChatMessages() {
 					<ModelMessage
 						key={message.id}
 						modelName={`${selectedModel.name} ${selectedModel.version}`}
-						// className={
-						// 	message.id === lastModelMessageId
-						// 		? "min-h-[calc(100vh-20rem)]"
-						// 		: ""
-						// }
 					>
 						{message.content}
 					</ModelMessage>
 				)
 			)}
 
+			{/* Streaming in corso */}
 			{streamingContent && (
 				<ModelMessage
 					modelName={`${selectedModel.name} ${selectedModel.version}`}
@@ -127,12 +117,14 @@ export default function ChatMessages() {
 				</ModelMessage>
 			)}
 
+			{/* Indicatore "sta scrivendo" */}
 			{isLoading && !streamingContent && (
 				<ModelTyping
 					modelName={`${selectedModel.name} ${selectedModel.version}`}
 				/>
 			)}
 
+			{/* Errori */}
 			{error && (
 				<div className="bg-red-100 p-4 rounded-lg">
 					<p className="text-red-500">Errore: {error}</p>
