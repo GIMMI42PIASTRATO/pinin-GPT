@@ -34,7 +34,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
 						<ChatMessages />
 					</ChatContainer>
 				</div>
-				<div className="fixed bottom-0 left-0 w-full px-2 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+				<div className="fixed bottom-0 left-0 w-full ml-[150px] px-2 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
 					<div className="relative mx-auto max-w-3xl">
 						<InputPrompt />
 					</div>

@@ -284,16 +284,19 @@ export default function AppSidebar() {
 									<SidebarMenu>
 										{pinnedChats.map((chat) => (
 											<SidebarMenuItem key={chat.id}>
-												<SidebarMenuButton asChild>
+												<SidebarMenuButton
+													className={cn(
+														"hover:bg-gray-200",
+														pathname ===
+															`/chat/${chat.id}` &&
+															"bg-gray-200 text-accent-foreground"
+													)}
+													asChild
+												>
 													<div className="flex w-full relative group">
 														<Link
 															href={`/chat/${chat.id}`}
-															className={cn(
-																"flex items-center gap-2 flex-1 pr-10 truncate",
-																pathname ===
-																	`/chat/${chat.id}` &&
-																	"bg-accent text-accent-foreground"
-															)}
+															className="flex items-center gap-2 flex-1 pr-10 truncate"
 														>
 															<MessageSquare className="h-4 w-4 shrink-0" />
 															<span className="truncate">
@@ -308,7 +311,7 @@ export default function AppSidebar() {
 																	<Button
 																		size="icon"
 																		variant="ghost"
-																		className="h-8 w-8 absolute right-1"
+																		className="h-8 w-8 absolute right-1 hover:bg-gray-300"
 																		onClick={(
 																			e
 																		) =>
@@ -350,17 +353,20 @@ export default function AppSidebar() {
 								<SidebarMenu>
 									{recentChats.length > 0 ? (
 										recentChats.map((chat) => (
-											<SidebarMenuItem key={chat.id}>
-												<SidebarMenuButton asChild>
+											<SidebarMenuItem>
+												<SidebarMenuButton
+													className={cn(
+														"hover:bg-gray-200",
+														pathname ===
+															`/chat/${chat.id}` &&
+															"bg-gray-200 text-accent-foreground"
+													)}
+													asChild
+												>
 													<div className="flex w-full relative group">
 														<Link
 															href={`/chat/${chat.id}`}
-															className={cn(
-																"flex items-center gap-2 flex-1 pr-10 truncate",
-																pathname ===
-																	`/chat/${chat.id}` &&
-																	"bg-accent text-accent-foreground"
-															)}
+															className="flex items-center gap-2 flex-1 pr-10 truncate"
 														>
 															<MessageSquare className="h-4 w-4 shrink-0" />
 															<span className="truncate">
@@ -375,7 +381,7 @@ export default function AppSidebar() {
 																	<Button
 																		size="icon"
 																		variant="ghost"
-																		className="h-8 w-8 absolute right-1 opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100"
+																		className="h-8 w-8 absolute right-1 opacity-0 hover:bg-gray-300 group-hover:opacity-100 hover:opacity-100 focus:opacity-100"
 																		onClick={(
 																			e
 																		) =>
