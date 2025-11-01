@@ -236,7 +236,7 @@ export function ModelMessage({
 // Componente contenitore per la chat
 export function ChatContainer({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="flex flex-col max-w-3xl mx-auto px-4 pt-6 pb-28 space-y-2">
+		<div className="flex flex-col max-w-3xl mx-auto px-4 pt-6 pb-36 space-y-2">
 			{children}
 		</div>
 	);

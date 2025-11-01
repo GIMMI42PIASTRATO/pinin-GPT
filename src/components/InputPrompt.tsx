@@ -2,7 +2,8 @@
 
 // Hooks
 import { useForm } from "react-hook-form";
-import { useEffect, useTransition, useState } from "react";
+import { useEffect, useTransition, useState, useRef } from "react";
+import { useAutosizeTextArea } from "@/components/ui/autoresizetextarea";
 
 // Context
 import { useChatContext } from "@/contexts/chatContext";
@@ -81,6 +82,9 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 		setStreamingContent,
 	} = useChatContext();
 
+	const textAreaRef = useRef<HTMLTextAreaElement>(null);
+	const [triggerAutoSize, setTriggerAutoSize] = useState<string>("");
+
 	type FormSchema = z.infer<typeof PromptSchema>;
 	const form = useForm<FormSchema>({
 		resolver: zodResolver(PromptSchema),
@@ -88,6 +92,20 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 			prompt: "",
 		},
 	});
+
+	useAutosizeTextArea({
+		textAreaRef,
+		triggerAutoSize: triggerAutoSize,
+		minHeight: 52,
+		maxHeight: 250,
+	});
+
+	const promptFormField = form.watch("prompt");
+	useEffect(() => {
+		if (textAreaRef.current) {
+			setTriggerAutoSize(promptFormField);
+		}
+	}, [promptFormField]);
 
 	// Sync the field of the form with currentPrompt when it changes
 	useEffect(() => {
@@ -333,7 +351,7 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 					>
 						<Textarea
 							className={cn(
-								"min-h-12 max-h-60 p-0 rounded-none border-none resize-none text-base placeholder:text-base focus-visible:outline-none focus-visible:ring-0 shadow-none",
+								"p-0 rounded-none border-none resize-none text-lg placeholder:text-base focus-visible:outline-none focus-visible:ring-0 shadow-none",
 								className
 							)}
 							placeholder="Fai una domanda."
@@ -350,6 +368,8 @@ export default function InputPrompt({ className, ...props }: InputPromptTypes) {
 									form.handleSubmit(onSubmit)();
 								}
 							}}
+							name="prompt"
+							ref={textAreaRef}
 							{...props}
 						/>
 						<Button
