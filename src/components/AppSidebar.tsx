@@ -353,7 +353,7 @@ export default function AppSidebar() {
 								<SidebarMenu>
 									{recentChats.length > 0 ? (
 										recentChats.map((chat) => (
-											<SidebarMenuItem>
+											<SidebarMenuItem key={chat.id}>
 												<SidebarMenuButton
 													className={cn(
 														"hover:bg-gray-200",
