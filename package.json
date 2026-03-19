@@ -27,7 +27,7 @@
 		"drizzle-orm": "^0.41.0",
 		"lucide-react": "^0.487.0",
 		"mysql2": "^3.14.0",
-		"next": "15.2.4",
+		"next": "15.5.14",
 		"ollama": "^0.5.14",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
@@ -58,5 +58,5 @@
 		"tsx": "^4.19.3",
 		"typescript": "^5"
 	},
-	"packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d"
+	"packageManager": "pnpm@10.32.1"
 }
